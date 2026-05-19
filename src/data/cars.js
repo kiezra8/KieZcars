@@ -10,8 +10,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 85000,
-    priceHire: 180,
+    priceSale: 310000000,
+    priceHire: 650000,
     isSale: true,
     isHire: true,
     specs: {
@@ -31,12 +31,12 @@ export const CAR_DATA = [
       "Crawl Control & Multi-Terrain Select",
       "Advanced Pre-Collision Safety Suite"
     ],
-    policy: "Enquiries via WhatsApp will be responded to within 15 minutes. For hiring: Valid national ID/Passport, driver's license (min. 3 years experience), and a refundable security deposit of $300 are required upon pickup."
+    policy: "Enquiries via WhatsApp will be responded to within 15 minutes. For hiring: Valid national ID/Passport, driver's license (min. 3 years experience), and a refundable security deposit are required upon pickup."
   },
   {
     id: "tesla-model-y",
     name: "Tesla Model Y Dual Motor",
-    category: "Luxury",
+    category: "Electric",
     tags: ["POPULAR", "100% ELECTRIC"],
     rating: 4.8,
     reviewsCount: 96,
@@ -44,8 +44,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 49900,
-    priceHire: 140,
+    priceSale: 185000000,
+    priceHire: 450000,
     isSale: true,
     isHire: true,
     specs: {
@@ -78,8 +78,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 114500,
-    priceHire: 260,
+    priceSale: 420000000,
+    priceHire: 950000,
     isSale: true,
     isHire: true,
     specs: {
@@ -104,7 +104,7 @@ export const CAR_DATA = [
   {
     id: "ford-mustang-gt",
     name: "Ford Mustang GT Fastback V8",
-    category: "Luxury",
+    category: "Sports",
     tags: ["NEW ARRIVAL", "V8 MUSCLE"],
     rating: 4.7,
     reviewsCount: 88,
@@ -112,8 +112,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1611245807189-8068227c549f?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 46000,
-    priceHire: 190,
+    priceSale: 170000000,
+    priceHire: 600000,
     isSale: true,
     isHire: true,
     specs: {
@@ -146,8 +146,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1616788494707-ec28f08d05a1?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 26500,
-    priceHire: 65,
+    priceSale: 98000000,
+    priceHire: 250000,
     isSale: true,
     isHire: true,
     specs: {
@@ -172,7 +172,7 @@ export const CAR_DATA = [
   {
     id: "range-rover-sport",
     name: "Range Rover Sport HSE",
-    category: "SUV",
+    category: "Hybrid",
     tags: ["PREMIUM SUV", "DYNMC LUXURY"],
     rating: 4.9,
     reviewsCount: 57,
@@ -180,8 +180,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1606016159991-dfe4f974be5c?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 92000,
-    priceHire: 220,
+    priceSale: 340000000,
+    priceHire: 800000,
     isSale: true,
     isHire: true,
     specs: {
@@ -214,8 +214,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 45500,
-    priceHire: 95,
+    priceSale: 168000000,
+    priceHire: 350000,
     isSale: true,
     isHire: true,
     specs: {
@@ -248,8 +248,8 @@ export const CAR_DATA = [
       "https://images.unsplash.com/photo-1606896328312-740c7689a420?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1525609004556-c46c7d6cf0a3?auto=format&fit=crop&q=80&w=800"
     ],
-    priceSale: 58900,
-    priceHire: 130,
+    priceSale: 210000000,
+    priceHire: 400000,
     isSale: true,
     isHire: true,
     specs: {
@@ -270,14 +270,120 @@ export const CAR_DATA = [
       "Virtual cockpit plus with full google maps"
     ],
     policy: "Minimum age of 23 for self-drive hires. Fully comprehensive zero-deductible insurance is available for an additional $20 per day. Delivered clean, must be returned clean."
+  },
+  {
+    id: "ford-f150-raptor",
+    name: "Ford F-150 Raptor V6",
+    category: "Pickup",
+    tags: ["OFFROAD BEAST", "TWIN TURBO"],
+    rating: 4.9,
+    reviewsCount: 45,
+    images: [
+      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=800"
+    ],
+    priceSale: 290000000,
+    priceHire: 700000,
+    isSale: true,
+    isHire: true,
+    specs: {
+      passengers: 5,
+      luggage: 6,
+      transmission: "Automatic",
+      fuel: "Petrol",
+      engine: "3.5L Twin-Turbo EcoBoost V6",
+      horsepower: "450 HP",
+      doors: 4
+    },
+    description: "The Ford F-150 Raptor is an absolute conqueror of rough terrain. Featuring custom Fox Racing shocks, a high-output twin-turbo V6 engine, and a massive bed for all your exploration gear, this truck makes heavy off-roading feel like a smooth breeze.",
+    features: [
+      "Fox Racing Shox Live Valve Damping",
+      "Terrain Management System with 7 Modes",
+      "37-inch All-Terrain heavy grip tires",
+      "Spacious SuperCrew interior cabin",
+      "B&O Unleashed 18-speaker Sound System"
+    ],
+    policy: "Perfect for extreme exploration. Self-drive hire requires a security deposit of 1,500,000 Ugshs. Absolutely no heavy cargo transportation allowed in the aluminum bed."
+  },
+  {
+    id: "porsche-911-cabriolet",
+    name: "Porsche 911 Carrera Cabriolet",
+    category: "Convertible",
+    tags: ["CABRIOLET", "TRACK LEGEND"],
+    rating: 5.0,
+    reviewsCount: 38,
+    images: [
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1611245807189-8068227c549f?auto=format&fit=crop&q=80&w=800"
+    ],
+    priceSale: 490000000,
+    priceHire: 1200000,
+    isSale: true,
+    isHire: true,
+    specs: {
+      passengers: 4,
+      luggage: 1,
+      transmission: "Automatic",
+      fuel: "Petrol",
+      engine: "3.0L Twin-Turbo Flat-6",
+      horsepower: "379 HP",
+      doors: 2
+    },
+    description: "Cruising the highway with the top down has never felt more electric. The Porsche 911 Carrera Cabriolet blends the timeless aerodynamic profile of the 911 with a fast-acting soft top, giving you a glorious symphony from the twin-turbo flat-6 engine.",
+    features: [
+      "Fully automatic fabric hood opens in 12s",
+      "Porsche Active Suspension Management (PASM)",
+      "Sport Chrono Package with mode selector switch",
+      "PCM Premium Navigation and connectivity console",
+      "Staggered 19/20-inch Carrera light alloy wheels"
+    ],
+    policy: "Self-drive hirers must be 28 years or older with clean driving record. Security deposit is 3,000,000 Ugshs. Chauffeur driven options highly recommended for weddings and VIP events."
+  },
+  {
+    id: "toyota-alphard-executive",
+    name: "Toyota Alphard Executive Lounge",
+    category: "Minivan",
+    tags: ["ROYAL CABINET", "FIRST CLASS VAN"],
+    rating: 4.9,
+    reviewsCount: 82,
+    images: [
+      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800"
+    ],
+    priceSale: 150000000,
+    priceHire: 380000,
+    isSale: true,
+    isHire: true,
+    specs: {
+      passengers: 7,
+      luggage: 5,
+      transmission: "Automatic",
+      fuel: "Petrol",
+      engine: "3.5L V6 Dual VVT-i",
+      horsepower: "296 HP",
+      doors: 5
+    },
+    description: "The ultimate luxury multi-purpose vehicle. Preferred by ministers, VIP delegates, and luxury tour operators, the Toyota Alphard Executive Lounge provides airplane business-class seating in the rear, private active-cooling passenger cabins, and ultra-smooth sound insulation.",
+    features: [
+      "Executive lounge second-row power ottoman seats",
+      "Dual power sliding side doors & power tailgate",
+      "Ceiling-mounted 12.1-inch entertainment screen",
+      "Premium leather upholstery and wooden trim options",
+      "Tri-zone automatic climate control with Nanoe air filters"
+    ],
+    policy: "Chauffeur service is available for a fee of 150,000 Ugshs per day. Excellent for diplomatic transport, corporate travel, and family holidays. Fuel usage is regular premium petrol."
   }
 ];
 
 export const CATEGORIES = [
-  { id: "all", name: "All Cars", icon: "Car" },
   { id: "SUV", name: "SUVs", icon: "Compass" },
+  { id: "Luxury", name: "Luxury", icon: "Gem" },
+  { id: "Sports", name: "Sports", icon: "Gauge" },
   { id: "Sedan", name: "Sedans", icon: "Layers" },
   { id: "Hatchback", name: "Hatchbacks", icon: "TrendingUp" },
-  { id: "Luxury", name: "Luxury Cars", icon: "Gem" },
-  { id: "Car Hire", name: "Car Hire Deals", icon: "Key" }
+  { id: "Electric", name: "Electric EVs", icon: "Zap" },
+  { id: "Hybrid", name: "Hybrids", icon: "Droplet" },
+  { id: "Pickup", name: "Pickups", icon: "Truck" },
+  { id: "Convertible", name: "Convertibles", icon: "Sun" },
+  { id: "Minivan", name: "Vans / MPVs", icon: "Users" }
 ];

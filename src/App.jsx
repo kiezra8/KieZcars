@@ -4,7 +4,8 @@ import {
   Search, ShoppingBag, User, Heart, Trash2, Plus, 
   Minus, ChevronLeft, Phone, MessageSquare, Check, 
   MapPin, Info, Calendar, DollarSign, ExternalLink, 
-  Share2, Shield, Users, Briefcase, Gauge, Droplet, Star
+  Share2, Shield, Users, Briefcase, Gauge, Droplet, Star,
+  Zap, Truck, Sun, Sparkles, X, ChevronRight, CheckCircle2
 } from 'lucide-react';
 import { CAR_DATA, CATEGORIES } from './data/cars';
 
@@ -25,6 +26,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeDetailTab, setActiveDetailTab] = useState('desc');
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   // Car detail settings (inside modal)
   const [detailMode, setDetailMode] = useState('hire'); // 'hire' or 'buy'
@@ -43,23 +45,25 @@ export default function App() {
   const slides = [
     {
       title: "Premium Fleet of Hire Vehicles",
-      desc: "Drive Tesla, Range Rover, & Land Cruiser from $65/day.",
+      desc: "Drive Land Cruiser V8, Tesla, & Range Rover from 250,000 Ugshs/day.",
       image: "https://images.unsplash.com/photo-1606016159991-dfe4f974be5c?auto=format&fit=crop&q=80&w=800",
-      category: "Car Hire"
+      category: "Elite Rentals"
     },
     {
       title: "Buy Your Dream Vehicle Today",
-      desc: "Top certified luxury and standard cars in pristine condition.",
+      desc: "Top certified luxury and standard cars in Kampala in pristine condition.",
       image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=800",
-      category: "Luxury"
+      category: "Certified Sales"
     },
     {
       title: "Eco-Friendly Electric Future",
-      desc: "Go green with high-end Tesla & Mild Hybrid innovations.",
+      desc: "Go green with high-end Tesla & Plug-In Hybrid innovations.",
       image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&q=80&w=800",
-      category: "Luxury"
+      category: "Electric EVs"
     }
   ];
+
+  const DEPOSIT = 800000; // 800,000 Ugshs standard refundable security deposit
 
   useEffect(() => {
     if (activeTab === 'home') {
@@ -82,6 +86,11 @@ export default function App() {
   const triggerToast = (msg) => {
     setSuccessToast(msg);
     setTimeout(() => setSuccessToast(''), 3000);
+  };
+
+  // Ugandan Shilling formatting utility
+  const formatUgshs = (num) => {
+    return num.toLocaleString() + ' Ugshs';
   };
 
   // Cart operations
@@ -147,35 +156,34 @@ export default function App() {
                             car.specs.fuel.toLowerCase().includes(searchQuery.toLowerCase());
       
       if (selectedCategory === 'all') return matchesSearch;
-      if (selectedCategory === 'Car Hire') return matchesSearch && car.isHire;
       return matchesSearch && car.category === selectedCategory;
     });
   };
 
-  // WhatsApp formatted enquiry string
+  // WhatsApp formatted enquiry string (Phone number hidden in URL)
   const getWhatsAppLink = (text) => {
     return `https://wa.me/256702370441?text=${encodeURIComponent(text)}`;
   };
 
   const generateSingleWhatsAppMessage = (car, mode, days, qty) => {
-    let text = `Hello KieZcars! 👋\n\nI'm highly interested in the following vehicle:\n`;
+    let text = `Hello KieZcars! 👋\n\nI am interested in ordering the following vehicle:\n`;
     text += `🚗 *${car.name}*\n`;
     text += `• Category: ${car.category}\n`;
-    text += `• Mode: ${mode === 'hire' ? 'Rental / Car Hire' : 'Outright Purchase'}\n`;
+    text += `• Option: ${mode === 'hire' ? 'Rental / Car Hire' : 'Outright Purchase'}\n`;
     
     if (mode === 'hire') {
       text += `• Duration: ${days} days\n`;
-      text += `• Daily rate: $${car.priceHire}/day\n`;
-      text += `• Rental Subtotal: $${car.priceHire * days}\n`;
-      text += `• Refundable Deposit: $200\n`;
-      text += `*Estimated Hire Price: $${(car.priceHire * days) + 200}*`;
+      text += `• Daily rate: ${formatUgshs(car.priceHire)}\n`;
+      text += `• Rental Subtotal: ${formatUgshs(car.priceHire * days)}\n`;
+      text += `• Refundable Deposit: ${formatUgshs(DEPOSIT)}\n`;
+      text += `*Total Estimate: ${formatUgshs((car.priceHire * days) + DEPOSIT)}*`;
     } else {
       text += `• Quantity: ${qty} unit(s)\n`;
-      text += `• Unit Price: $${car.priceSale.toLocaleString()}\n`;
-      text += `*Grand Total: $${(car.priceSale * qty).toLocaleString()}*`;
+      text += `• Unit Price: ${formatUgshs(car.priceSale)}\n`;
+      text += `*Grand Total: ${formatUgshs(car.priceSale * qty)}*`;
     }
     
-    text += `\n\nPlease confirm availability and booking/sales steps. Thank you!`;
+    text += `\n\nPlease confirm availability and details. Thank you!`;
     return getWhatsAppLink(text);
   };
 
@@ -188,23 +196,24 @@ export default function App() {
       text += `${index + 1}. *${car.name}* (${item.mode === 'hire' ? 'Hire' : 'Buy'})\n`;
       if (item.mode === 'hire') {
         const sub = car.priceHire * item.days;
-        text += `   • Rate: $${car.priceHire}/day × ${item.days} days = $${sub}\n`;
+        text += `   • Rate: ${formatUgshs(car.priceHire)}/day × ${item.days} days = ${formatUgshs(sub)}\n`;
         grandTotal += sub;
       } else {
         const sub = car.priceSale * item.quantity;
-        text += `   • Price: $${car.priceSale.toLocaleString()} × ${item.quantity} = $${sub.toLocaleString()}\n`;
+        text += `   • Price: ${formatUgshs(car.priceSale)} × ${item.quantity} = ${formatUgshs(sub)}\n`;
         grandTotal += sub;
       }
     });
     
-    text += `\n*Total Estimated Amount: $${grandTotal.toLocaleString()}*\n\n`;
-    text += `Please verify availability and advise on next steps.`;
+    text += `\n*Refundable Security Deposit: ${formatUgshs(DEPOSIT)}*\n`;
+    text += `*Total Estimated Amount: ${formatUgshs(grandTotal + DEPOSIT)}*\n\n`;
+    text += `Please verify availability and advise on pickup/delivery.`;
     return getWhatsAppLink(text);
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setActiveTab('categories');
+    setActiveTab('allcars');
   };
 
   const handleLogin = (e) => {
@@ -223,120 +232,181 @@ export default function App() {
     triggerToast("Logged Out Successfully");
   };
 
+  // Render proper icon for category
+  const renderCategoryIcon = (catId, size = 18) => {
+    const iconMap = {
+      SUV: Compass,
+      Luxury: Gem,
+      Sports: Gauge,
+      Sedan: Layers,
+      Hatchback: TrendingUp,
+      Electric: Zap,
+      Hybrid: Droplet,
+      Pickup: Truck,
+      Convertible: Sun,
+      Minivan: Users
+    };
+    const IconComponent = iconMap[catId] || Car;
+    return <IconComponent size={size} />;
+  };
+
+  const trendingCars = CAR_DATA.filter(car => 
+    car.id === 'toyota-land-cruiser-v8' || 
+    car.id === 'mercedes-benz-s-class' || 
+    car.id === 'porsche-911-cabriolet' ||
+    car.id === 'range-rover-sport'
+  );
+
   return (
     <>
       {/* Visual Canvas flanking emulator */}
       <div className="desktop-bg-canvas">
         <div className="desktop-info-card">
           <div className="brand-feature-badge">
-            <Car size={16} /> Premium Car Booking
+            <Sparkles size={16} style={{ color: 'var(--primary)' }} /> Kampala's Ultimate Showroom
           </div>
           <h1>KieZcars</h1>
           <p>
-            Experience premium car sales and elite car hire rentals. Book seamlessly via WhatsApp.
-            Optimized as a PWA, responsive, elegant, and offline capable.
+            Experience premium car sales and elite car hire rentals. Book seamlessly via WhatsApp without online credit cards.
+            Fully responsive, elegant glassmorphism and animated components.
           </p>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flex: 1 }}>
-              <h4 style={{ color: '#ff5733', fontSize: '1.2rem', marginBottom: '4px' }}>24/7</h4>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>WhatsApp Support</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h4 style={{ color: 'var(--primary)', fontSize: '1.1rem', marginBottom: '4px' }}>Ugshs Pricing</h4>
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Fully formatted in Ugandan Shillings</span>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flex: 1 }}>
-              <h4 style={{ color: '#ff5733', fontSize: '1.2rem', marginBottom: '4px' }}>100%</h4>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Secure Redirection</span>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '14px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h4 style={{ color: 'var(--primary)', fontSize: '1.1rem', marginBottom: '4px' }}>Hidden Secure Hotline</h4>
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Secure WhatsApp & Call connections</span>
             </div>
           </div>
         </div>
+
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           {/* Main App Container */}
           <div className="app-emulator-container">
             
-            {/* Header */}
+            {/* Sticky Header with Company Name */}
             <header style={{
-              background: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
+              background: 'rgba(15, 22, 38, 0.85)',
+              backdropFilter: 'blur(12px)',
               position: 'sticky',
               top: 0,
               zIndex: 50,
-              padding: '12px 16px',
+              padding: '14px 16px',
               borderBottom: '1px solid var(--border-light)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px'
+              gap: '12px'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div onClick={() => setActiveTab('home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <div onClick={() => { setActiveTab('home'); setSelectedCategory('all'); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                   <div style={{
-                    background: 'var(--primary)',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, #ff8b70 100%)',
                     color: 'white',
                     padding: '8px',
                     borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 15px rgba(255, 87, 51, 0.3)'
                   }}>
                     <Car size={20} />
                   </div>
-                  <span style={{ fontWeight: '800', fontSize: '1.3rem', letterSpacing: '-0.03em' }}>
-                    KieZ<span style={{ color: 'var(--primary)' }}>cars</span>
-                  </span>
+                  <div>
+                    <span style={{ fontWeight: '800', fontSize: '1.4rem', letterSpacing: '-0.04em', color: 'white', display: 'block', lineHeight: '1.1' }}>
+                      KieZ<span style={{ color: 'var(--primary)' }}>cars</span>
+                    </span>
+                    <span style={{ fontSize: '0.62rem', fontWeight: '700', color: 'var(--text-muted)', letterSpacing: '0.12em' }}>
+                      KAMPALA'S ELITE FLEET
+                    </span>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <button 
                     onClick={() => setActiveTab('favorites')}
-                    style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', color: '#64748b' }}
+                    style={{ 
+                      position: 'relative', 
+                      background: 'rgba(255,255,255,0.03)', 
+                      border: '1px solid var(--border-light)', 
+                      borderRadius: '12px',
+                      cursor: 'pointer', 
+                      padding: '8px', 
+                      color: '#94a3b8',
+                      transition: 'var(--transition)'
+                    }}
                   >
-                    <Heart size={22} fill={favorites.length > 0 ? "var(--danger)" : "none"} color={favorites.length > 0 ? "var(--danger)" : "#64748b"} />
+                    <Heart size={18} fill={favorites.length > 0 ? "var(--danger)" : "none"} color={favorites.length > 0 ? "var(--danger)" : "#94a3b8"} />
                     {favorites.length > 0 && (
                       <span style={{
-                        position: 'absolute', top: -1, right: -1,
+                        position: 'absolute', top: -3, right: -3,
                         background: 'var(--danger)', color: 'white',
-                        fontSize: '0.65rem', fontWeight: 'bold',
-                        padding: '1.5px 5px', borderRadius: '99px'
+                        fontSize: '0.6rem', fontWeight: '800',
+                        width: '16px', height: '16px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}>{favorites.length}</span>
                     )}
                   </button>
 
                   <button 
                     onClick={() => setActiveTab('cart')}
-                    style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', color: '#64748b' }}
+                    style={{ 
+                      position: 'relative', 
+                      background: 'rgba(255,255,255,0.03)', 
+                      border: '1px solid var(--border-light)', 
+                      borderRadius: '12px',
+                      cursor: 'pointer', 
+                      padding: '8px', 
+                      color: '#94a3b8',
+                      transition: 'var(--transition)'
+                    }}
                   >
-                    <ShoppingBag size={22} color={cart.length > 0 ? "var(--primary)" : "#64748b"} />
+                    <ShoppingBag size={18} color={cart.length > 0 ? "var(--primary)" : "#94a3b8"} />
                     {cart.length > 0 && (
                       <span style={{
-                        position: 'absolute', top: -1, right: -1,
+                        position: 'absolute', top: -3, right: -3,
                         background: 'var(--primary)', color: 'white',
-                        fontSize: '0.65rem', fontWeight: 'bold',
-                        padding: '1.5px 5px', borderRadius: '99px'
+                        fontSize: '0.6rem', fontWeight: '800',
+                        width: '16px', height: '16px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}>{cart.length}</span>
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* Search Bar Input */}
+              {/* Decorative Driving Car Micro-Interaction (Animation #3) */}
+              <div style={{ position: 'relative', width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div className="animate-car-drive" style={{ position: 'absolute', top: -6, color: 'var(--primary)', width: '20px' }}>
+                  <Car size={10} fill="var(--primary)" />
+                </div>
+              </div>
+
+              {/* Search bar input */}
               <form onSubmit={handleSearchSubmit} style={{ position: 'relative', width: '100%' }}>
                 <input 
                   type="text"
-                  placeholder="Search sports cars, luxury SUVs, hire terms..."
+                  placeholder="Search Rover, Land Cruiser, EV hybrids..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
                     width: '100%',
                     paddingLeft: '40px',
-                    height: '42px',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0',
-                    fontSize: '0.88rem'
+                    height: '40px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-light)',
+                    fontSize: '0.85rem',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    color: 'white'
                   }}
                 />
-                <Search size={18} style={{ position: 'absolute', left: '14px', top: '12px', color: 'var(--text-muted)' }} />
+                <Search size={16} style={{ position: 'absolute', left: '14px', top: '12px', color: 'var(--text-muted)' }} />
                 {searchQuery && (
                   <button 
                     type="button" 
                     onClick={() => setSearchQuery('')}
-                    style={{ position: 'absolute', right: '14px', top: '11px', border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer' }}
+                    style={{ position: 'absolute', right: '14px', top: '11px', border: 'none', background: 'transparent', color: '#94a3b8', fontSize: '0.78rem', cursor: 'pointer' }}
                   >
                     Clear
                   </button>
@@ -348,36 +418,43 @@ export default function App() {
             {successToast && (
               <div style={{
                 position: 'absolute',
-                top: '75px', left: '50%', transform: 'translateX(-50%)',
-                background: '#0f172a', color: 'white',
-                padding: '10px 18px', borderRadius: '99px',
-                fontSize: '0.85rem', fontWeight: '500',
+                top: '125px', left: '50%', transform: 'translateX(-50%)',
+                background: '#090d16', color: 'white',
+                border: '1px solid rgba(18, 161, 80, 0.3)',
+                padding: '10px 18px', borderRadius: '20px',
+                fontSize: '0.82rem', fontWeight: '600',
                 display: 'flex', alignItems: 'center', gap: '8px',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                 zIndex: 99,
                 animation: 'fadeIn 0.25s ease-out'
               }}>
-                <Check size={16} color="#10b981" strokeWidth={3} />
+                <CheckCircle2 size={16} color="#12a150" strokeWidth={3} />
                 <span>{successToast}</span>
               </div>
             )}
 
             {/* Scrollable Core Screens */}
-            <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '30px', background: '#f8fafc' }}>
+            <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '30px', background: 'var(--bg-main)' }}>
               
               {/* SCREEN: HOME */}
               {activeTab === 'home' && (
-                <div className="animate-fade-in">
+                <div className="animate-slide-up-fade">
                   
-                  {/* Hero carousel */}
-                  <div style={{ position: 'relative', width: '100%', height: '170px', overflow: 'hidden' }}>
+                  {/* Hero carousel (Animation #1 - Auto Rotating text slide up) */}
+                  <div style={{ position: 'relative', width: '100%', height: '185px', overflow: 'hidden' }}>
                     <div style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                       backgroundImage: `url(${slides[currentSlide].image})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      filter: 'brightness(0.65)',
+                      filter: 'brightness(0.5) contrast(1.1)',
                       transition: 'background-image 0.8s ease-in-out'
+                    }} />
+                    
+                    {/* Linear glass overlay */}
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(to top, var(--bg-main) 0%, rgba(11, 15, 25, 0.1) 100%)'
                     }} />
                     
                     <div style={{
@@ -385,31 +462,44 @@ export default function App() {
                       display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', color: 'white'
                     }}>
                       <div style={{
-                        background: 'rgba(255, 87, 51, 0.2)', border: '1px solid rgba(255, 87, 51, 0.4)',
-                        color: '#ff8b70', fontSize: '0.68rem', fontWeight: '800', width: 'fit-content',
-                        padding: '3px 8px', borderRadius: '6px', marginBottom: '8px', letterSpacing: '0.05em'
+                        background: 'rgba(255, 87, 51, 0.15)', border: '1px solid rgba(255, 87, 51, 0.3)',
+                        color: '#ff8b70', fontSize: '0.62rem', fontWeight: '800', width: 'fit-content',
+                        padding: '3px 8px', borderRadius: '6px', marginBottom: '8px', letterSpacing: '0.08em'
                       }}>
                         {slides[currentSlide].category.toUpperCase()}
                       </div>
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                      
+                      {/* slideUp animation on state transition */}
+                      <h2 key={currentSlide} style={{ 
+                        fontSize: '1.3rem', 
+                        fontWeight: '800', 
+                        marginBottom: '4px', 
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                        animation: 'slideUpFade 0.5s ease-out forwards'
+                      }}>
                         {slides[currentSlide].title}
                       </h2>
-                      <p style={{ fontSize: '0.8rem', color: '#e2e8f0', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                      <p style={{ 
+                        fontSize: '0.8rem', 
+                        color: '#cbd5e1', 
+                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                        lineHeight: '1.3'
+                      }}>
                         {slides[currentSlide].desc}
                       </p>
                     </div>
 
                     {/* Dots indicator */}
-                    <div style={{ position: 'absolute', bottom: '12px', right: '20px', display: 'flex', gap: '6px' }}>
+                    <div style={{ position: 'absolute', bottom: '16px', right: '20px', display: 'flex', gap: '6px', zIndex: 12 }}>
                       {slides.map((_, i) => (
                         <div 
                           key={i}
                           onClick={() => setCurrentSlide(i)}
                           style={{
-                            width: currentSlide === i ? '18px' : '6px',
+                            width: currentSlide === i ? '20px' : '6px',
                             height: '6px',
                             borderRadius: '3px',
-                            background: currentSlide === i ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
+                            background: currentSlide === i ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
                             cursor: 'pointer',
                             transition: 'var(--transition)'
                           }}
@@ -418,44 +508,81 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Horizontal Category Icons Grid */}
-                  <div style={{ padding: '20px 16px' }}>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Browse by Vehicle Type</span>
-                      <span onClick={() => { setSelectedCategory('all'); setActiveTab('categories'); }} style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer' }}>View All</span>
+                  {/* Categories Header & Grid (ALL 10 SEEN ON HOME SCREEN) */}
+                  <div style={{ padding: '24px 16px 16px 16px' }}>
+                    <h3 style={{ 
+                      fontSize: '1rem', 
+                      fontWeight: '800', 
+                      color: 'white', 
+                      marginBottom: '14px', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      letterSpacing: '-0.01em'
+                    }}>
+                      <span>Explore Luxury Categories</span>
+                      <span 
+                        onClick={() => { setSelectedCategory('all'); setActiveTab('allcars'); }} 
+                        style={{ color: 'var(--primary)', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+                      >
+                        Reset Filter <ChevronRight size={14} />
+                      </span>
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
-                      {CATEGORIES.slice(1).map((cat) => {
-                        const IconComponent = {
-                          SUV: Compass,
-                          Luxury: Gem,
-                          Hatchback: TrendingUp,
-                          Sedan: Layers,
-                          "Car Hire": Key
-                        }[cat.id] || Car;
-
+                    
+                    {/* Beautiful 5x2 grid showing exactly 10 categories (Animation #2 - Card lift on hover) */}
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(5, 1fr)', 
+                      gridTemplateRows: 'repeat(2, auto)',
+                      gap: '12px 6px' 
+                    }}>
+                      {CATEGORIES.map((cat) => {
+                        const isSelected = selectedCategory === cat.id;
                         return (
                           <div 
                             key={cat.id} 
-                            onClick={() => { setSelectedCategory(cat.id); setActiveTab('categories'); }}
+                            onClick={() => {
+                              setSelectedCategory(cat.id);
+                              // Smooth scroll to the All Cars listing below
+                              const el = document.getElementById('all-cars-anchor');
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                            className="category-item"
                             style={{
-                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer'
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              alignItems: 'center', 
+                              gap: '6px', 
+                              cursor: 'pointer',
                             }}
                           >
-                            <div style={{
-                              width: '50px', height: '50px',
-                              borderRadius: '16px',
-                              background: '#ffffff',
-                              border: '1px solid #f1f5f9',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              boxShadow: 'var(--shadow-sm)',
-                              color: 'var(--primary)',
+                            <div 
+                              className="category-icon-wrapper"
+                              style={{
+                                width: '48px', height: '48px',
+                                borderRadius: '16px',
+                                background: isSelected ? 'var(--primary)' : 'rgba(255, 255, 255, 0.03)',
+                                border: isSelected ? '1px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.05)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: isSelected ? '0 4px 12px rgba(255, 87, 51, 0.25)' : 'var(--shadow-sm)',
+                                color: isSelected ? 'white' : 'var(--primary)',
+                                transition: 'var(--transition)'
+                              }}
+                            >
+                              {renderCategoryIcon(cat.id, 20)}
+                            </div>
+                            <span style={{ 
+                              fontSize: '0.68rem', 
+                              fontWeight: isSelected ? '700' : '600', 
+                              color: isSelected ? 'white' : 'var(--text-muted)', 
+                              textAlign: 'center', 
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              width: '100%',
                               transition: 'var(--transition)'
                             }}>
-                              <IconComponent size={22} />
-                            </div>
-                            <span style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
-                              {cat.id === "Car Hire" ? "Hire" : cat.id}
+                              {cat.name}
                             </span>
                           </div>
                         );
@@ -463,23 +590,147 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Featured Vehicles List (2-column grid layout) */}
-                  <div style={{ padding: '0 16px 20px 16px' }}>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '14px' }}>
-                      🔥 Hot Deals of the Week
+                  {/* Trending Rides Section */}
+                  <div style={{ padding: '8px 16px 20px 16px' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'white', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={16} style={{ color: 'var(--primary)' }} /> Trending Rides
                     </h3>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-                      {CAR_DATA.slice(0, 4).map((car) => (
+                    {/* Horizontal scroll track */}
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '14px', 
+                      overflowX: 'auto', 
+                      paddingBottom: '10px',
+                      scrollSnapType: 'x mandatory'
+                    }}>
+                      {trendingCars.map((car) => (
                         <div 
                           key={car.id} 
+                          className="premium-card"
                           onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }}
                           style={{
-                            background: 'white',
+                            minWidth: '240px',
+                            width: '240px',
+                            background: 'rgba(22, 30, 49, 0.65)',
+                            borderRadius: '24px',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            scrollSnapAlign: 'start',
+                            flexShrink: 0
+                          }}
+                        >
+                          {/* Wishlist Heart */}
+                          <button 
+                            onClick={(e) => toggleFavorite(car.id, e)}
+                            style={{
+                              position: 'absolute', top: '12px', right: '12px',
+                              width: '30px', height: '30px', borderRadius: '50%',
+                              background: 'rgba(9, 13, 22, 0.7)',
+                              backdropFilter: 'blur(4px)',
+                              border: '1px solid rgba(255, 255, 255, 0.08)', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              zIndex: 10, cursor: 'pointer', color: '#94a3b8'
+                            }}
+                          >
+                            <Heart size={14} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#94a3b8"} />
+                          </button>
+
+                          {/* Badge tag */}
+                          <span className={`card-badge ${car.isHire && !car.isSale ? 'hire' : 'sale'}`}>
+                            {car.category}
+                          </span>
+
+                          <div style={{ width: '100%', height: '125px', overflow: 'hidden' }}>
+                            <img src={car.images[0]} alt={car.name} className="premium-card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+
+                          <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                                <Star size={11} fill="var(--warning)" color="var(--warning)" />
+                                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: 'white' }}>{car.rating}</span>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>({car.reviewsCount})</span>
+                              </div>
+
+                              <h4 style={{ fontSize: '0.85rem', fontWeight: '800', lineHeight: '1.2', color: 'white', marginBottom: '8px' }}>
+                                {car.name}
+                              </h4>
+                            </div>
+
+                            <div>
+                              <div style={{ display: 'flex', gap: '8px', fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Users size={11} /> {car.specs.passengers} Seats</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Gauge size={11} /> {car.specs.transmission[0]}A</span>
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '10px' }}>
+                                <div>
+                                  {car.isHire && (
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--primary)' }}>
+                                      {formatUgshs(car.priceHire)}<span style={{ fontSize: '0.62rem', fontWeight: '500', color: 'var(--text-muted)' }}>/day</span>
+                                    </div>
+                                  )}
+                                  {car.isSale && !car.isHire && (
+                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'white' }}>
+                                      {formatUgshs(car.priceSale)}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Small Order Button */}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCar(car);
+                                    setDetailMode(car.isHire ? 'hire' : 'buy');
+                                  }}
+                                  style={{
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    padding: '5px 10px',
+                                    fontSize: '0.68rem',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 10px rgba(255, 87, 51, 0.2)',
+                                    transition: 'var(--transition)'
+                                  }}
+                                >
+                                  Order
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* All Cars Section */}
+                  <div id="all-cars-anchor" style={{ padding: '0 16px 20px 16px' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'white', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>All Cars & Fleet</span>
+                      {selectedCategory !== 'all' && (
+                        <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '700' }}>
+                          Filtered: {selectedCategory}
+                        </span>
+                      )}
+                    </h3>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                      {getFilteredCars().map((car) => (
+                        <div 
+                          key={car.id} 
+                          className="premium-card"
+                          onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }}
+                          style={{
                             borderRadius: '20px',
                             overflow: 'hidden',
-                            boxShadow: 'var(--shadow-sm)',
-                            border: '1px solid #f1f5f9',
                             position: 'relative',
                             cursor: 'pointer',
                             display: 'flex',
@@ -492,65 +743,77 @@ export default function App() {
                             style={{
                               position: 'absolute', top: '10px', right: '10px',
                               width: '28px', height: '28px', borderRadius: '50%',
-                              background: 'rgba(255, 255, 255, 0.85)',
+                              background: 'rgba(9, 13, 22, 0.7)',
                               border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              zIndex: 10, cursor: 'pointer', color: '#64748b'
+                              zIndex: 10, cursor: 'pointer', color: '#94a3b8'
                             }}
                           >
-                            <Heart size={15} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#64748b"} />
+                            <Heart size={13} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#94a3b8"} />
                           </button>
 
                           {/* Badge tag */}
                           <span className={`card-badge ${car.isHire && !car.isSale ? 'hire' : 'sale'}`}>
-                            {car.tags[0]}
+                            {car.category}
                           </span>
 
                           <div style={{ width: '100%', height: '110px', overflow: 'hidden' }}>
-                            <img src={car.images[0]} alt={car.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={car.images[0]} alt={car.name} className="premium-card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
 
                           <div style={{ padding: '10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '4px' }}>
-                                <Star size={11} fill="var(--warning)" color="var(--warning)" />
-                                <span style={{ fontSize: '0.72rem', fontWeight: '700' }}>{car.rating}</span>
-                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>({car.reviewsCount})</span>
+                                <Star size={10} fill="var(--warning)" color="var(--warning)" />
+                                <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white' }}>{car.rating}</span>
                               </div>
 
-                              <h4 style={{ fontSize: '0.82rem', fontWeight: '700', lineHeight: '1.2', color: 'var(--text-main)', marginBottom: '6px' }}>
+                              <h4 style={{ fontSize: '0.78rem', fontWeight: '800', lineHeight: '1.2', color: 'white', marginBottom: '6px' }}>
                                 {car.name}
                               </h4>
                             </div>
 
                             <div>
-                              <div style={{ display: 'flex', gap: '8px', fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '8px', flexWrap: 'wrap' }}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}><Gauge size={10} />{car.specs.horsepower}</span>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}><Droplet size={10} />{car.specs.fuel}</span>
+                              <div style={{ display: 'flex', gap: '4px', fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Gauge size={9} />{car.specs.horsepower}</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Droplet size={9} />{car.specs.fuel}</span>
                               </div>
 
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '8px' }}>
-                                <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px' }}>
+                                <div style={{ maxWidth: '65%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--primary)' }}>
-                                      ${car.priceHire}<span style={{ fontSize: '0.65rem', fontWeight: '500', color: 'var(--text-muted)' }}>/d</span>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                                      {formatUgshs(car.priceHire)}<span style={{ fontSize: '0.55rem', fontWeight: '500', color: 'var(--text-muted)' }}>/d</span>
                                     </div>
                                   )}
                                   {car.isSale && !car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                                      ${car.priceSale.toLocaleString()}
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'white', whiteSpace: 'nowrap' }}>
+                                      {formatUgshs(car.priceSale)}
                                     </div>
                                   )}
                                 </div>
-                                <div style={{
-                                  background: 'var(--primary-light)',
-                                  color: 'var(--primary)',
-                                  borderRadius: '8px',
-                                  width: '26px', height: '26px',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: '1rem', fontWeight: 'bold'
-                                }}>
-                                  +
-                                </div>
+                                
+                                {/* Small Order Button */}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCar(car);
+                                    setDetailMode(car.isHire ? 'hire' : 'buy');
+                                  }}
+                                  style={{
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    padding: '4px 8px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 3px 6px rgba(255, 87, 51, 0.15)',
+                                    transition: 'var(--transition)'
+                                  }}
+                                >
+                                  Order
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -560,23 +823,24 @@ export default function App() {
                   </div>
 
                   {/* Booking Guarantee Banner */}
-                  <div style={{ padding: '0 16px' }}>
+                  <div style={{ padding: '0 16px 10px 16px' }}>
                     <div style={{
-                      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                      background: 'linear-gradient(135deg, #161e31 0%, #0d1220 100%)',
                       borderRadius: '24px', padding: '16px', color: 'white',
                       display: 'flex', alignItems: 'center', gap: '16px',
+                      border: '1px solid rgba(255,255,255,0.05)',
                       boxShadow: 'var(--shadow-md)'
                     }}>
                       <div style={{
-                        background: 'rgba(255, 87, 51, 0.15)', color: 'var(--primary)',
+                        background: 'rgba(255, 87, 51, 0.12)', color: 'var(--primary)',
                         padding: '12px', borderRadius: '18px'
                       }}>
                         <Shield size={24} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <h4 style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '3px' }}>WhatsApp Direct Guarantee</h4>
-                        <p style={{ fontSize: '0.72rem', color: '#94a3b8', lineHeight: '1.4' }}>
-                          No credit card needed online! Order details are automatically formatted and verified by representative in minutes.
+                        <h4 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '3px' }}>WhatsApp Direct Booking</h4>
+                        <p style={{ fontSize: '0.7rem', color: '#94a3b8', lineHeight: '1.4' }}>
+                          Kampala's most secure luxury car service. No online deposits. Confirm booking via direct WhatsApp in 10 minutes.
                         </p>
                       </div>
                     </div>
@@ -584,29 +848,45 @@ export default function App() {
                 </div>
               )}
 
-              {/* SCREEN: CATEGORIES / SEARCH */}
+              {/* SCREEN: CATEGORIES TAB */}
               {activeTab === 'categories' && (
-                <div className="animate-fade-in" style={{ padding: '16px 0' }}>
+                <div className="animate-slide-up-fade" style={{ padding: '16px 0' }}>
                   
-                  {/* Category Chip List Scrollbar */}
+                  {/* Horizontal Scroll Category Chips */}
                   <div style={{
                     display: 'flex', gap: '8px', overflowX: 'auto',
                     padding: '0 16px 14px 16px',
                     whiteSpace: 'nowrap',
                     borderBottom: '1px solid var(--border-light)'
                   }}>
+                    <button
+                      onClick={() => setSelectedCategory('all')}
+                      style={{
+                        background: selectedCategory === 'all' ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                        color: selectedCategory === 'all' ? 'white' : 'var(--text-muted)',
+                        border: selectedCategory === 'all' ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
+                        padding: '8px 16px',
+                        borderRadius: '99px',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'var(--transition)'
+                      }}
+                    >
+                      All Cars
+                    </button>
                     {CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
                         style={{
-                          background: selectedCategory === cat.id ? 'var(--primary)' : 'white',
-                          color: selectedCategory === cat.id ? 'white' : 'var(--text-main)',
-                          border: selectedCategory === cat.id ? '1px solid var(--primary)' : '1px solid #e2e8f0',
+                          background: selectedCategory === cat.id ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                          color: selectedCategory === cat.id ? 'white' : 'var(--text-muted)',
+                          border: selectedCategory === cat.id ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)',
                           padding: '8px 16px',
                           borderRadius: '99px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600',
+                          fontSize: '0.78rem',
+                          fontWeight: '700',
                           cursor: 'pointer',
                           boxShadow: selectedCategory === cat.id ? '0 4px 12px rgba(255, 87, 51, 0.2)' : 'none',
                           transition: 'var(--transition)'
@@ -619,29 +899,27 @@ export default function App() {
 
                   {/* Listings Result count */}
                   <div style={{ padding: '16px 16px 8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Showing <b>{getFilteredCars().length}</b> vehicles
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Showing <b>{getFilteredCars().length}</b> luxury vehicles
                     </span>
                     {searchQuery && (
-                      <span style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--primary)' }}>
                         Query: "{searchQuery}"
                       </span>
                     )}
                   </div>
 
                   {/* Grid list of Category Filtered Cars */}
-                  <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+                  <div style={{ padding: '0 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                     {getFilteredCars().length > 0 ? (
                       getFilteredCars().map((car) => (
                         <div 
                           key={car.id} 
+                          className="premium-card"
                           onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }}
                           style={{
-                            background: 'white',
                             borderRadius: '20px',
                             overflow: 'hidden',
-                            boxShadow: 'var(--shadow-sm)',
-                            border: '1px solid #f1f5f9',
                             position: 'relative',
                             cursor: 'pointer',
                             display: 'flex',
@@ -653,12 +931,12 @@ export default function App() {
                             style={{
                               position: 'absolute', top: '10px', right: '10px',
                               width: '28px', height: '28px', borderRadius: '50%',
-                              background: 'rgba(255, 255, 255, 0.85)',
+                              background: 'rgba(9, 13, 22, 0.7)',
                               border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              zIndex: 10, cursor: 'pointer', color: '#64748b'
+                              zIndex: 10, cursor: 'pointer', color: '#94a3b8'
                             }}
                           >
-                            <Heart size={15} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#64748b"} />
+                            <Heart size={13} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#94a3b8"} />
                           </button>
 
                           <span className={`card-badge ${car.isHire && !car.isSale ? 'hire' : 'sale'}`}>
@@ -666,51 +944,63 @@ export default function App() {
                           </span>
 
                           <div style={{ width: '100%', height: '110px', overflow: 'hidden' }}>
-                            <img src={car.images[0]} alt={car.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={car.images[0]} alt={car.name} className="premium-card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
 
                           <div style={{ padding: '10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '4px' }}>
-                                <Star size={11} fill="var(--warning)" color="var(--warning)" />
-                                <span style={{ fontSize: '0.72rem', fontWeight: '700' }}>{car.rating}</span>
-                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>({car.reviewsCount})</span>
+                                <Star size={10} fill="var(--warning)" color="var(--warning)" />
+                                <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white' }}>{car.rating}</span>
                               </div>
 
-                              <h4 style={{ fontSize: '0.82rem', fontWeight: '700', lineHeight: '1.2', color: 'var(--text-main)', marginBottom: '6px' }}>
+                              <h4 style={{ fontSize: '0.78rem', fontWeight: '800', lineHeight: '1.2', color: 'white', marginBottom: '6px' }}>
                                 {car.name}
                               </h4>
                             </div>
 
                             <div>
-                              <div style={{ display: 'flex', gap: '8px', fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '8px', flexWrap: 'wrap' }}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}><Users size={10} /> {car.specs.passengers} seats</span>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}><Gauge size={10} /> {car.specs.transmission}</span>
+                              <div style={{ display: 'flex', gap: '4px', fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Users size={9} /> {car.specs.passengers} seats</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Gauge size={9} /> {car.specs.transmission[0]}A</span>
                               </div>
 
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '8px' }}>
-                                <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px' }}>
+                                <div style={{ maxWidth: '65%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--primary)' }}>
-                                      ${car.priceHire}<span style={{ fontSize: '0.65rem', fontWeight: '500', color: 'var(--text-muted)' }}>/d</span>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                                      {formatUgshs(car.priceHire)}<span style={{ fontSize: '0.55rem', fontWeight: '500', color: 'var(--text-muted)' }}>/d</span>
                                     </div>
                                   )}
                                   {car.isSale && !car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                                      ${car.priceSale.toLocaleString()}
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'white', whiteSpace: 'nowrap' }}>
+                                      {formatUgshs(car.priceSale)}
                                     </div>
                                   )}
                                 </div>
-                                <div style={{
-                                  background: 'var(--primary-light)',
-                                  color: 'var(--primary)',
-                                  borderRadius: '8px',
-                                  width: '26px', height: '26px',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: '1rem', fontWeight: 'bold'
-                                }}>
-                                  +
-                                </div>
+                                
+                                {/* Small Order Button */}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCar(car);
+                                    setDetailMode(car.isHire ? 'hire' : 'buy');
+                                  }}
+                                  style={{
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    padding: '4px 8px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 3px 6px rgba(255, 87, 51, 0.15)',
+                                    transition: 'var(--transition)'
+                                  }}
+                                >
+                                  Order
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -718,37 +1008,144 @@ export default function App() {
                       ))
                     ) : (
                       <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                        <Car size={40} style={{ color: '#cbd5e1', marginBottom: '10px' }} />
-                        <h4 style={{ color: 'var(--text-main)', marginBottom: '4px' }}>No Cars Found</h4>
-                        <p style={{ fontSize: '0.8rem' }}>We couldn't match your query. Try broadening your keywords!</p>
+                        <Car size={36} style={{ color: 'rgba(255,255,255,0.1)', marginBottom: '10px' }} />
+                        <h4 style={{ color: 'white', marginBottom: '4px', fontSize: '0.9rem' }}>No Cars Found</h4>
+                        <p style={{ fontSize: '0.75rem' }}>No vehicles match your query. Try broadening your keywords!</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
+              {/* SCREEN: ALL CARS TAB */}
+              {activeTab === 'allcars' && (
+                <div className="animate-slide-up-fade" style={{ padding: '16px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', marginBottom: '4px' }}>
+                    Showroom Catalog
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                    Full inventory of premium rental vehicles and certified purchase fleet in Kampala.
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    {CAR_DATA.map((car) => (
+                      <div 
+                        key={car.id} 
+                        className="premium-card"
+                        onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }}
+                        style={{
+                          borderRadius: '20px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
+                      >
+                        <button 
+                          onClick={(e) => toggleFavorite(car.id, e)}
+                          style={{
+                            position: 'absolute', top: '10px', right: '10px',
+                            width: '28px', height: '28px', borderRadius: '50%',
+                            background: 'rgba(9, 13, 22, 0.7)',
+                            border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 10, cursor: 'pointer', color: '#94a3b8'
+                          }}
+                        >
+                          <Heart size={13} fill={favorites.includes(car.id) ? "var(--danger)" : "none"} color={favorites.includes(car.id) ? "var(--danger)" : "#94a3b8"} />
+                        </button>
+
+                        <span className={`card-badge ${car.isHire && !car.isSale ? 'hire' : 'sale'}`}>
+                          {car.category}
+                        </span>
+
+                        <div style={{ width: '100%', height: '110px', overflow: 'hidden' }}>
+                          <img src={car.images[0]} alt={car.name} className="premium-card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+
+                        <div style={{ padding: '10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '4px' }}>
+                              <Star size={10} fill="var(--warning)" color="var(--warning)" />
+                              <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white' }}>{car.rating}</span>
+                            </div>
+
+                            <h4 style={{ fontSize: '0.78rem', fontWeight: '800', lineHeight: '1.2', color: 'white', marginBottom: '6px' }}>
+                              {car.name}
+                            </h4>
+                          </div>
+
+                          <div>
+                            <div style={{ display: 'flex', gap: '4px', fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Gauge size={9} />{car.specs.horsepower}</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px' }}><Droplet size={9} />{car.specs.fuel}</span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px' }}>
+                              <div style={{ maxWidth: '65%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {car.isHire && (
+                                  <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                                    {formatUgshs(car.priceHire)}<span style={{ fontSize: '0.55rem', fontWeight: '500', color: 'var(--text-muted)' }}>/d</span>
+                                  </div>
+                                )}
+                                {car.isSale && !car.isHire && (
+                                  <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'white', whiteSpace: 'nowrap' }}>
+                                    {formatUgshs(car.priceSale)}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Small Order Button */}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCar(car);
+                                  setDetailMode(car.isHire ? 'hire' : 'buy');
+                                }}
+                                style={{
+                                  background: 'var(--primary)',
+                                  color: 'white',
+                                  borderRadius: '8px',
+                                  border: 'none',
+                                  padding: '4px 8px',
+                                  fontSize: '0.65rem',
+                                  fontWeight: '800',
+                                  cursor: 'pointer',
+                                  boxShadow: '0 3px 6px rgba(255, 87, 51, 0.15)',
+                                  transition: 'var(--transition)'
+                                }}
+                              >
+                                Order
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* SCREEN: FAVORITES */}
               {activeTab === 'favorites' && (
-                <div className="animate-fade-in" style={{ padding: '16px' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>
-                    Your Saved Showroom
+                <div className="animate-slide-up-fade" style={{ padding: '16px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', marginBottom: '4px' }}>
+                    Your Showroom Showroom
                   </h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                    Easily compare or launch enquiries for your favorite vehicles.
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                    Compare and launch enquiries for your highly-desired luxury vehicles.
                   </p>
 
                   {favorites.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                       {CAR_DATA.filter(car => favorites.includes(car.id)).map((car) => (
                         <div 
                           key={car.id} 
+                          className="premium-card"
                           onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }}
                           style={{
-                            background: 'white',
                             borderRadius: '20px',
                             overflow: 'hidden',
-                            boxShadow: 'var(--shadow-sm)',
-                            border: '1px solid #f1f5f9',
                             position: 'relative',
                             cursor: 'pointer',
                             display: 'flex',
@@ -760,49 +1157,62 @@ export default function App() {
                             style={{
                               position: 'absolute', top: '10px', right: '10px',
                               width: '28px', height: '28px', borderRadius: '50%',
-                              background: 'rgba(255, 255, 255, 0.85)',
+                              background: 'rgba(9, 13, 22, 0.7)',
                               border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              zIndex: 10, cursor: 'pointer', color: '#64748b'
+                              zIndex: 10, cursor: 'pointer', color: '#94a3b8'
                             }}
                           >
-                            <Heart size={15} fill="var(--danger)" color="var(--danger)" />
+                            <Heart size={13} fill="var(--danger)" color="var(--danger)" />
                           </button>
 
                           <div style={{ width: '100%', height: '110px', overflow: 'hidden' }}>
-                            <img src={car.images[0]} alt={car.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={car.images[0]} alt={car.name} className="premium-card-img" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
 
                           <div style={{ padding: '10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
-                              <h4 style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                              <h4 style={{ fontSize: '0.78rem', fontWeight: '800', color: 'white', marginBottom: '6px' }}>
                                 {car.name}
                               </h4>
                             </div>
 
                             <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '8px' }}>
                                 <div>
                                   {car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--primary)' }}>
-                                      ${car.priceHire}<span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/d</span>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--primary)' }}>
+                                      {formatUgshs(car.priceHire)}<span style={{ fontSize: '0.55rem', color: 'var(--text-muted)' }}>/d</span>
                                     </div>
                                   )}
                                   {car.isSale && !car.isHire && (
-                                    <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                                      ${car.priceSale.toLocaleString()}
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: 'white' }}>
+                                      {formatUgshs(car.priceSale)}
                                     </div>
                                   )}
                                 </div>
-                                <div style={{
-                                  background: 'var(--primary-light)',
-                                  color: 'var(--primary)',
-                                  borderRadius: '8px',
-                                  width: '26px', height: '26px',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: '1rem', fontWeight: 'bold'
-                                }}>
-                                  +
-                                </div>
+                                
+                                {/* Small Order Button */}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCar(car);
+                                    setDetailMode(car.isHire ? 'hire' : 'buy');
+                                  }}
+                                  style={{
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    padding: '4px 8px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 3px 6px rgba(255, 87, 51, 0.15)',
+                                    transition: 'var(--transition)'
+                                  }}
+                                >
+                                  Order
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -811,15 +1221,15 @@ export default function App() {
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                      <Heart size={44} style={{ color: '#cbd5e1', marginBottom: '10px' }} />
-                      <h4 style={{ color: 'var(--text-main)', marginBottom: '4px' }}>No Favorites Yet</h4>
-                      <p style={{ fontSize: '0.8rem' }}>Tap the heart icons on cars to populate your personalized showroom.</p>
+                      <Heart size={44} style={{ color: 'rgba(255,255,255,0.06)', marginBottom: '10px' }} />
+                      <h4 style={{ color: 'white', marginBottom: '4px', fontSize: '0.9rem' }}>No Favorites Yet</h4>
+                      <p style={{ fontSize: '0.75rem' }}>Tap the heart icons on cars to populate your personalized showroom list.</p>
                       <button 
                         onClick={() => setActiveTab('home')}
                         style={{
                           marginTop: '15px', background: 'var(--primary)', color: 'white',
                           border: 'none', padding: '8px 18px', borderRadius: '12px',
-                          fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer'
+                          fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer'
                         }}
                       >
                         Explore Vehicles
@@ -831,15 +1241,15 @@ export default function App() {
 
               {/* SCREEN: CART & CHECKOUT FLOW */}
               {activeTab === 'cart' && (
-                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                <div className="animate-slide-up-fade" style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white' }}>
                       Booking Enquiry Cart
                     </h3>
                     {cart.length > 0 && (
                       <button 
                         onClick={() => { setCart([]); triggerToast("Cleared all cart items"); }}
-                        style={{ border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer' }}
+                        style={{ border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}
                       >
                         Clear All
                       </button>
@@ -852,9 +1262,9 @@ export default function App() {
                         <div 
                           key={item.id}
                           style={{
-                            background: 'white',
+                            background: 'rgba(255, 255, 255, 0.03)',
                             borderRadius: '20px',
-                            border: '1px solid #f1f5f9',
+                            border: '1px solid var(--border-light)',
                             padding: '12px',
                             display: 'flex',
                             gap: '12px',
@@ -868,7 +1278,7 @@ export default function App() {
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)', maxWidth: '85%' }}>
+                                <h4 style={{ fontSize: '0.82rem', fontWeight: '800', color: 'white', maxWidth: '85%' }}>
                                   {item.car.name}
                                 </h4>
                                 <button 
@@ -879,35 +1289,35 @@ export default function App() {
                                 </button>
                               </div>
                               <span style={{
-                                fontSize: '0.68rem', fontWeight: '700', padding: '2px 6px', borderRadius: '6px',
-                                background: item.mode === 'hire' ? 'var(--primary-light)' : '#f1f5f9',
-                                color: item.mode === 'hire' ? 'var(--primary)' : 'var(--text-main)',
-                                display: 'inline-block', marginTop: '3px'
+                                fontSize: '0.62rem', fontWeight: '800', padding: '2.5px 6px', borderRadius: '6px',
+                                background: item.mode === 'hire' ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0.05)',
+                                color: item.mode === 'hire' ? 'var(--primary)' : 'white',
+                                display: 'inline-block', marginTop: '4px', textTransform: 'uppercase'
                               }}>
                                 {item.mode === 'hire' ? 'Rental Hire' : 'Buy Sale'}
                               </span>
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                              <div style={{ fontSize: '0.9rem', fontWeight: '800' }}>
-                                ${item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity)}
+                              <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'white' }}>
+                                {formatUgshs(item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity))}
                               </div>
 
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', padding: '4px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
                                 <button 
                                   onClick={() => updateCartQuantity(item.id, -1)}
-                                  style={{ border: 'none', background: 'transparent', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                  style={{ border: 'none', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                 >
-                                  <Minus size={14} />
+                                  <Minus size={13} />
                                 </button>
-                                <span style={{ fontSize: '0.8rem', fontWeight: '700', minWidth: '16px', textAlign: 'center' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: '800', minWidth: '16px', textAlign: 'center', color: 'white' }}>
                                   {item.mode === 'hire' ? item.days : item.quantity}
                                 </span>
                                 <button 
                                   onClick={() => updateCartQuantity(item.id, 1)}
-                                  style={{ border: 'none', background: 'transparent', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                  style={{ border: 'none', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                 >
-                                  <Plus size={14} />
+                                  <Plus size={13} />
                                 </button>
                               </div>
                             </div>
@@ -917,27 +1327,27 @@ export default function App() {
 
                       {/* Order Summary Card */}
                       <div style={{
-                        background: 'white',
+                        background: 'rgba(255, 255, 255, 0.02)',
                         borderRadius: '24px',
-                        border: '1px solid #f1f5f9',
+                        border: '1px solid var(--border-light)',
                         padding: '16px',
                         marginTop: '10px'
                       }}>
-                        <h4 style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '12px', color: 'var(--text-main)' }}>Summary Summary</h4>
+                        <h4 style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '12px', color: 'white' }}>Order Summary</h4>
                         
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span>Vehicles in Enquiry</span>
-                            <span>{cart.length} item(s)</span>
+                            <span style={{ color: 'white' }}>{cart.length} vehicle(s)</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Security Refundable Deposit</span>
-                            <span>$200</span>
+                            <span>Refundable Security Deposit</span>
+                            <span style={{ color: 'white' }}>{formatUgshs(DEPOSIT)}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '10px', fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '10px', fontSize: '0.9rem', fontWeight: '800', color: 'white' }}>
                             <span>Grand Total Estimate</span>
                             <span style={{ color: 'var(--primary)' }}>
-                              ${(cart.reduce((sum, item) => sum + (item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity)), 0) + 200).toLocaleString()}
+                              {formatUgshs(cart.reduce((sum, item) => sum + (item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity)), 0) + DEPOSIT)}
                             </span>
                           </div>
                         </div>
@@ -948,34 +1358,31 @@ export default function App() {
                         href={generateCartWhatsAppMessage()}
                         target="_blank"
                         rel="noreferrer"
-                        className="animate-pulse-green"
+                        className="animate-glow-pulse"
                         style={{
                           background: 'var(--success)', color: 'white',
-                          padding: '16px', borderRadius: '18px',
+                          padding: '16px', borderRadius: '16px',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                          fontWeight: '700', textDecoration: 'none', fontSize: '0.95rem',
-                          textAlign: 'center', marginTop: '10px'
+                          fontWeight: '800', textDecoration: 'none', fontSize: '0.9rem',
+                          textAlign: 'center', marginTop: '10px',
+                          boxShadow: '0 4px 15px rgba(18, 161, 80, 0.3)'
                         }}
                       >
-                        <MessageSquare size={20} fill="white" />
-                        <span>Submit Booking Enquiry via WhatsApp</span>
+                        <MessageSquare size={18} fill="white" />
+                        <span>Submit Booking via WhatsApp</span>
                       </a>
-                      
-                      <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>
-                        This links directly to booking support number: <b>+256702370441</b>. We respond instantly.
-                      </p>
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-                      <ShoppingBag size={44} style={{ color: '#cbd5e1', marginBottom: '10px' }} />
-                      <h4 style={{ color: 'var(--text-main)', marginBottom: '4px' }}>Cart is Empty</h4>
-                      <p style={{ fontSize: '0.8rem' }}>Browse our showroom and add cars you want to rent or purchase.</p>
+                      <ShoppingBag size={44} style={{ color: 'rgba(255,255,255,0.06)', marginBottom: '10px' }} />
+                      <h4 style={{ color: 'white', marginBottom: '4px', fontSize: '0.9rem' }}>Cart is Empty</h4>
+                      <p style={{ fontSize: '0.75rem' }}>Browse the showroom and add vehicles you want to hire or purchase.</p>
                       <button 
                         onClick={() => setActiveTab('home')}
                         style={{
                           marginTop: '15px', background: 'var(--primary)', color: 'white',
                           border: 'none', padding: '8px 18px', borderRadius: '12px',
-                          fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer'
+                          fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer'
                         }}
                       >
                         Find a Car
@@ -985,35 +1392,37 @@ export default function App() {
                 </div>
               )}
 
-              {/* SCREEN: ACCOUNT & PWA INFORMATION */}
+              {/* SCREEN: ACCOUNT & PROFILE */}
               {activeTab === 'account' && (
-                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                <div className="animate-slide-up-fade" style={{ padding: '16px' }}>
                   
                   {/* Profile Section */}
                   <div style={{
-                    background: 'white', borderRadius: '24px', padding: '20px',
-                    border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    background: 'rgba(255, 255, 255, 0.03)', borderRadius: '24px', padding: '20px',
+                    border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', alignItems: 'center',
                     marginBottom: '16px', textAlign: 'center'
                   }}>
                     <div style={{
                       width: '64px', height: '64px', borderRadius: '50%',
                       background: 'var(--primary-light)', color: 'var(--primary)',
-                      display: 'flex', alignItems: 'center', justify: 'center',
+                      border: '1px solid rgba(255, 87, 51, 0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '1.8rem', fontWeight: '800', marginBottom: '12px'
                     }}>
-                      {userEmail ? userEmail[0].toUpperCase() : <User size={30} />}
+                      {userEmail ? userEmail[0].toUpperCase() : <User size={28} />}
                     </div>
 
                     {userEmail ? (
                       <div>
-                        <h4 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-main)' }}>{userEmail}</h4>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Active Showroom Member</span>
+                        <h4 style={{ fontSize: '1rem', fontWeight: '800', color: 'white' }}>{userEmail}</h4>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>Active Showroom Member</span>
                         <button 
                           onClick={handleLogout}
                           style={{
                             marginTop: '12px', background: 'transparent', color: 'var(--danger)',
                             border: '1px solid var(--danger)', padding: '5px 12px', borderRadius: '8px',
-                            fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer'
+                            fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer',
+                            transition: 'var(--transition)'
                           }}
                         >
                           Sign Out
@@ -1021,8 +1430,8 @@ export default function App() {
                       </div>
                     ) : (
                       <form onSubmit={handleLogin} style={{ width: '100%' }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '4px' }}>Welcome Guest User</h4>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '14px' }}>Sign in to synchronize your favorites list and bookings.</p>
+                        <h4 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '4px', color: 'white' }}>Welcome Guest User</h4>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '14px' }}>Sign in to save your wishlist and track your WhatsApp enquiries.</p>
                         
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <input 
@@ -1038,7 +1447,7 @@ export default function App() {
                             style={{
                               background: 'var(--primary)', color: 'white', border: 'none',
                               padding: '0 14px', borderRadius: '12px', fontSize: '0.8rem',
-                              fontWeight: '600', cursor: 'pointer'
+                              fontWeight: '700', cursor: 'pointer'
                             }}
                           >
                             Sign In
@@ -1048,80 +1457,31 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* Direct Contact & Support */}
+                  {/* PWA offline installation instructions */}
                   <div style={{
-                    background: 'white', borderRadius: '24px', padding: '16px',
-                    border: '1px solid #f1f5f9', marginBottom: '16px'
+                    background: 'rgba(255, 255, 255, 0.03)', borderRadius: '24px', padding: '16px',
+                    border: '1px solid var(--border-light)'
                   }}>
-                    <h4 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '12px' }}>KieZcars Support Center</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <a 
-                        href="tel:+256702370441"
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '12px',
-                          padding: '12px', borderRadius: '14px', background: '#f8fafc',
-                          textDecoration: 'none', color: 'var(--text-main)', fontSize: '0.82rem',
-                          border: '1px solid #e2e8f0', transition: 'var(--transition)'
-                        }}
-                      >
-                        <div style={{ color: 'var(--primary)', background: 'var(--primary-light)', padding: '8px', borderRadius: '10px' }}>
-                          <Phone size={18} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '700' }}>Direct Call Support</div>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>+256 702 370441 (Uganda HQ)</span>
-                        </div>
-                      </a>
-
-                      <a 
-                        href="https://wa.me/256702370441"
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '12px',
-                          padding: '12px', borderRadius: '14px', background: '#f8fafc',
-                          textDecoration: 'none', color: 'var(--text-main)', fontSize: '0.82rem',
-                          border: '1px solid #e2e8f0', transition: 'var(--transition)'
-                        }}
-                      >
-                        <div style={{ color: 'var(--success)', background: 'var(--success-light)', padding: '8px', borderRadius: '10px' }}>
-                          <MessageSquare size={18} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '700' }}>Direct WhatsApp Chat</div>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Tap to instantly message representatives</span>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* PWA Offline Installation Guide */}
-                  <div style={{
-                    background: 'white', borderRadius: '24px', padding: '16px',
-                    border: '1px solid #f1f5f9'
-                  }}>
-                    <h4 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
                       <Info size={16} color="var(--primary)" /> 
                       PWA Installation Guide
                     </h4>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                        <div style={{ background: '#f1f5f9', color: 'var(--text-main)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>1</div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', color: 'white', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>1</div>
                         <p><b>iOS Safari</b>: Tap the share icon <Share2 size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> at the bottom of Safari browser and click <b>"Add to Home Screen"</b>.</p>
                       </div>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                        <div style={{ background: '#f1f5f9', color: 'var(--text-main)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>2</div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', color: 'white', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>2</div>
                         <p><b>Android Chrome</b>: Tap the vertical menu icon in the upper-right corner and select <b>"Install app"</b> or <b>"Add to Home screen"</b>.</p>
                       </div>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                        <div style={{ background: '#f1f5f9', color: 'var(--text-main)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>3</div>
-                        <p>Enjoy fast launch, smooth page transitions, PWA frame borders, offline capabilities, and zero browser tab clutter!</p>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', color: 'white', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>3</div>
+                        <p>Enjoy instant loading, full-screen PWA interface, offline capabilities, and zero browser toolbar clutter!</p>
                       </div>
                     </div>
                   </div>
-
                 </div>
               )}
 
@@ -1129,7 +1489,7 @@ export default function App() {
 
             {/* Bottom sticky navigation footer */}
             <footer style={{
-              background: '#ffffff',
+              background: '#0d1322',
               borderTop: '1px solid var(--border-light)',
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
@@ -1146,7 +1506,7 @@ export default function App() {
                 }}
               >
                 <Compass size={20} />
-                <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Home</span>
+                <span style={{ fontSize: '0.62rem', fontWeight: '700' }}>Home</span>
               </button>
 
               <button 
@@ -1158,47 +1518,33 @@ export default function App() {
                 }}
               >
                 <Layers size={20} />
-                <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Categories</span>
+                <span style={{ fontSize: '0.62rem', fontWeight: '700' }}>Categories</span>
               </button>
 
-              {/* Raised Centered Floating WhatsApp Chat Button */}
-              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                <a 
-                  href="https://wa.me/256702370441"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="animate-pulse-coral"
-                  style={{
-                    position: 'absolute',
-                    top: '-18px',
-                    background: 'var(--primary)',
-                    color: 'white',
-                    width: '54px', height: '54px',
-                    borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 8px 20px rgba(255, 87, 51, 0.45)',
-                    border: '4px solid #ffffff',
-                    cursor: 'pointer',
-                    zIndex: 45
-                  }}
-                >
-                  <MessageSquare size={22} fill="white" />
-                </a>
-                <span style={{ position: 'absolute', bottom: '6px', fontSize: '0.65rem', fontWeight: '600', color: 'var(--text-muted)' }}>
-                  Chat Support
-                </span>
-              </div>
-
+              {/* All Cars bottom nav tab */}
               <button 
-                onClick={() => setActiveTab('cart')}
+                onClick={() => { setActiveTab('allcars'); setSelectedCategory('all'); }}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
                   background: 'transparent', border: 'none', cursor: 'pointer',
-                  color: activeTab === 'cart' ? 'var(--primary)' : 'var(--text-muted)'
+                  color: activeTab === 'allcars' ? 'var(--primary)' : 'var(--text-muted)'
                 }}
               >
-                <ShoppingBag size={20} />
-                <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Cart</span>
+                <Car size={20} />
+                <span style={{ fontSize: '0.62rem', fontWeight: '700' }}>All Cars</span>
+              </button>
+
+              {/* Chat action tab (triggers beautiful bottom drawer, phone number completely hidden) */}
+              <button 
+                onClick={() => { setIsChatOpen(true); }}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: isChatOpen ? 'var(--primary)' : 'var(--text-muted)'
+                }}
+              >
+                <MessageSquare size={20} />
+                <span style={{ fontSize: '0.62rem', fontWeight: '700' }}>Chat</span>
               </button>
 
               <button 
@@ -1210,7 +1556,7 @@ export default function App() {
                 }}
               >
                 <User size={20} />
-                <span style={{ fontSize: '0.65rem', fontWeight: '600' }}>Account</span>
+                <span style={{ fontSize: '0.62rem', fontWeight: '700' }}>Account</span>
               </button>
             </footer>
 
@@ -1219,7 +1565,7 @@ export default function App() {
               <div style={{
                 position: 'absolute',
                 top: 0, left: 0, right: 0, bottom: 0,
-                background: '#ffffff',
+                background: '#090d16',
                 zIndex: 100,
                 display: 'flex',
                 flexDirection: 'column',
@@ -1232,14 +1578,15 @@ export default function App() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  background: '#ffffff'
+                  background: 'rgba(15, 22, 38, 0.9)',
+                  backdropFilter: 'blur(10px)'
                 }}>
                   <button 
                     onClick={() => setSelectedCar(null)}
                     style={{
                       background: 'transparent', border: 'none', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: '4px',
-                      color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: '600'
+                      color: 'white', fontSize: '0.85rem', fontWeight: '700'
                     }}
                   >
                     <ChevronLeft size={20} />
@@ -1249,15 +1596,15 @@ export default function App() {
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                     <button 
                       onClick={(e) => toggleFavorite(selectedCar.id, e)}
-                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
                     >
-                      <Heart size={22} fill={favorites.includes(selectedCar.id) ? "var(--danger)" : "none"} color={favorites.includes(selectedCar.id) ? "var(--danger)" : "#64748b"} />
+                      <Heart size={20} fill={favorites.includes(selectedCar.id) ? "var(--danger)" : "none"} color={favorites.includes(selectedCar.id) ? "var(--danger)" : "#94a3b8"} />
                     </button>
                   </div>
                 </div>
 
                 {/* Content Area */}
-                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px', background: 'var(--bg-main)' }}>
                   
                   {/* Photo details hero cover */}
                   <div style={{ width: '100%', height: '220px', position: 'relative' }}>
@@ -1271,88 +1618,89 @@ export default function App() {
                   <div style={{ padding: '16px 20px 0 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
                       <Star size={14} fill="var(--warning)" color="var(--warning)" />
-                      <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{selectedCar.rating}</span>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>({selectedCar.reviewsCount} reviews)</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: '800', color: 'white' }}>{selectedCar.rating}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({selectedCar.reviewsCount} reviews)</span>
                     </div>
 
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '14px' }}>
+                    <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'white', marginBottom: '14px' }}>
                       {selectedCar.name}
                     </h2>
 
                     {/* Spec badges grid */}
                     <div style={{
                       display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px',
-                      background: '#f8fafc', padding: '12px', borderRadius: '16px',
-                      border: '1px solid #e2e8f0', marginBottom: '20px'
+                      background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '16px',
+                      border: '1px solid var(--border-light)', marginBottom: '20px'
                     }}>
                       <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>ENG</span>
-                        <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-main)', wordBreak: 'break-word' }}>{selectedCar.specs.fuel}</span>
+                        <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>ENG</span>
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white', wordBreak: 'break-word' }}>{selectedCar.specs.fuel}</span>
                       </div>
-                      <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>SEAT</span>
-                        <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-main)' }}>{selectedCar.specs.passengers} Pls</span>
+                      <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+                        <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>SEAT</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '700', color: 'white' }}>{selectedCar.specs.passengers} Pls</span>
                       </div>
-                      <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>GEAR</span>
-                        <span style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{selectedCar.specs.transmission[0]} Auto</span>
+                      <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+                        <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>GEAR</span>
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{selectedCar.specs.transmission[0]}A</span>
                       </div>
-                      <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>HP</span>
-                        <span style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-main)' }}>{selectedCar.specs.horsepower}</span>
+                      <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+                        <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>HP</span>
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', color: 'white' }}>{selectedCar.specs.horsepower}</span>
                       </div>
                     </div>
 
                     {/* Mode selector (if both sell & hire available) */}
                     {selectedCar.isHire && selectedCar.isSale && (
                       <div style={{
-                        display: 'flex', background: '#f1f5f9', padding: '4px',
-                        borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0'
+                        display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '4px',
+                        borderRadius: '12px', marginBottom: '20px', border: '1px solid var(--border-light)'
                       }}>
                         <button 
                           onClick={() => setDetailMode('hire')}
                           style={{
                             flex: 1, padding: '8px', border: 'none', borderRadius: '10px',
-                            background: detailMode === 'hire' ? 'white' : 'transparent',
-                            color: detailMode === 'hire' ? 'var(--primary)' : 'var(--text-muted)',
-                            fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
-                            boxShadow: detailMode === 'hire' ? 'var(--shadow-sm)' : 'none'
+                            background: detailMode === 'hire' ? 'var(--primary)' : 'transparent',
+                            color: detailMode === 'hire' ? 'white' : 'var(--text-muted)',
+                            fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer',
+                            transition: 'var(--transition)'
                           }}
                         >
-                          Book/Rent Car
+                          Book / Rent Car
                         </button>
                         <button 
                           onClick={() => setDetailMode('buy')}
                           style={{
                             flex: 1, padding: '8px', border: 'none', borderRadius: '10px',
-                            background: detailMode === 'buy' ? 'white' : 'transparent',
-                            color: detailMode === 'buy' ? 'var(--primary)' : 'var(--text-muted)',
-                            fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
-                            boxShadow: detailMode === 'buy' ? 'var(--shadow-sm)' : 'none'
+                            background: detailMode === 'buy' ? 'var(--primary)' : 'transparent',
+                            color: detailMode === 'buy' ? 'white' : 'var(--text-muted)',
+                            fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer',
+                            transition: 'var(--transition)'
                           }}
                         >
-                          Buy/Purchase
+                          Buy Outright
                         </button>
                       </div>
                     )}
 
-                    {/* Pricing configuration details */}
+                    {/* Pricing configuration details in Ugandan Shillings */}
                     <div style={{
                       background: 'var(--primary-light)', padding: '16px', borderRadius: '20px',
+                      border: '1px solid rgba(255, 87, 51, 0.15)',
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'
                     }}>
                       <div>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: '700' }}>
-                          {detailMode === 'hire' ? 'Rental Day Rate' : 'Outright Price'}
+                        <span style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase' }}>
+                          {detailMode === 'hire' ? 'Rental Daily Rate' : 'Outright Sale Price'}
                         </span>
-                        <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                          ${detailMode === 'hire' ? selectedCar.priceHire : selectedCar.priceSale.toLocaleString()}
-                          {detailMode === 'hire' && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '500' }}>/day</span>}
+                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white', marginTop: '2px' }}>
+                          {formatUgshs(detailMode === 'hire' ? selectedCar.priceHire : selectedCar.priceSale)}
+                          {detailMode === 'hire' && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '500' }}>/day</span>}
                         </div>
                       </div>
 
                       {/* Quantity / Days adjustments */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'white', padding: '6px 12px', borderRadius: '10px', border: '1px solid rgba(255, 87, 51, 0.2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#090d16', padding: '6px 12px', borderRadius: '10px', border: '1px solid rgba(255, 87, 51, 0.2)' }}>
                         <button 
                           onClick={() => {
                             if (detailMode === 'hire') {
@@ -1361,11 +1709,11 @@ export default function App() {
                               setDetailQuantity(prev => Math.max(1, prev - 1));
                             }
                           }}
-                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}
+                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#cbd5e1' }}
                         >
-                          <Minus size={14} />
+                          <Minus size={13} />
                         </button>
-                        <span style={{ fontSize: '0.85rem', fontWeight: '700', minWidth: '24px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '800', minWidth: '24px', textAlign: 'center', color: 'white' }}>
                           {detailMode === 'hire' ? `${detailDays}d` : `${detailQuantity}x`}
                         </span>
                         <button 
@@ -1376,9 +1724,9 @@ export default function App() {
                               setDetailQuantity(prev => prev + 1);
                             }
                           }}
-                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}
+                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#cbd5e1' }}
                         >
-                          <Plus size={14} />
+                          <Plus size={13} />
                         </button>
                       </div>
                     </div>
@@ -1392,7 +1740,7 @@ export default function App() {
                         onClick={() => setActiveDetailTab('desc')}
                         style={{
                           background: 'transparent', border: 'none', padding: '10px 0',
-                          fontSize: '0.85rem', fontWeight: '700', cursor: 'pointer',
+                          fontSize: '0.82rem', fontWeight: '800', cursor: 'pointer',
                           color: activeDetailTab === 'desc' ? 'var(--primary)' : 'var(--text-muted)',
                           position: 'relative'
                         }}
@@ -1404,7 +1752,7 @@ export default function App() {
                         onClick={() => setActiveDetailTab('specs')}
                         style={{
                           background: 'transparent', border: 'none', padding: '10px 0',
-                          fontSize: '0.85rem', fontWeight: '700', cursor: 'pointer',
+                          fontSize: '0.82rem', fontWeight: '800', cursor: 'pointer',
                           color: activeDetailTab === 'specs' ? 'var(--primary)' : 'var(--text-muted)',
                           position: 'relative'
                         }}
@@ -1416,43 +1764,43 @@ export default function App() {
                         onClick={() => setActiveDetailTab('policy')}
                         style={{
                           background: 'transparent', border: 'none', padding: '10px 0',
-                          fontSize: '0.85rem', fontWeight: '700', cursor: 'pointer',
+                          fontSize: '0.82rem', fontWeight: '800', cursor: 'pointer',
                           color: activeDetailTab === 'policy' ? 'var(--primary)' : 'var(--text-muted)',
                           position: 'relative'
                         }}
                       >
-                        <span>Rental Terms</span>
+                        <span>Showroom Terms</span>
                         {activeDetailTab === 'policy' && <div className="tab-active-indicator" />}
                       </button>
                     </div>
 
                     {/* Tab panels info */}
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '24px' }}>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '24px' }}>
                       {activeDetailTab === 'desc' && (
                         <p>{selectedCar.description}</p>
                       )}
 
                       {activeDetailTab === 'specs' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
                             <span style={{ fontWeight: '600' }}>Engine Unit</span>
-                            <span style={{ color: 'var(--text-main)' }}>{selectedCar.specs.engine}</span>
+                            <span style={{ color: 'white' }}>{selectedCar.specs.engine}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
                             <span style={{ fontWeight: '600' }}>Total Horsepower</span>
-                            <span style={{ color: 'var(--text-main)' }}>{selectedCar.specs.horsepower}</span>
+                            <span style={{ color: 'white' }}>{selectedCar.specs.horsepower}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
                             <span style={{ fontWeight: '600' }}>Fuel Option</span>
-                            <span style={{ color: 'var(--text-main)' }}>{selectedCar.specs.fuel}</span>
+                            <span style={{ color: 'white' }}>{selectedCar.specs.fuel}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
                             <span style={{ fontWeight: '600' }}>Transmission Gearbox</span>
-                            <span style={{ color: 'var(--text-main)' }}>{selectedCar.specs.transmission}</span>
+                            <span style={{ color: 'white' }}>{selectedCar.specs.transmission}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
                             <span style={{ fontWeight: '600' }}>Luggage Capacity</span>
-                            <span style={{ color: 'var(--text-main)' }}>{selectedCar.specs.luggage} bags</span>
+                            <span style={{ color: 'white' }}>{selectedCar.specs.luggage} bags</span>
                           </div>
                         </div>
                       )}
@@ -1468,7 +1816,7 @@ export default function App() {
                 {/* STICKY BOTTOM RESERVATION BAR */}
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0,
-                  background: 'rgba(255,255,255,0.95)',
+                  background: 'rgba(15, 22, 38, 0.95)',
                   backdropFilter: 'blur(10px)',
                   borderTop: '1px solid var(--border-light)',
                   padding: '12px 16px',
@@ -1481,14 +1829,14 @@ export default function App() {
                       setSelectedCar(null);
                     }}
                     style={{
-                      flex: 1, background: '#0f172a', color: 'white',
-                      border: 'none', borderRadius: '14px', padding: '12px 0',
-                      fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer',
+                      flex: 1, background: 'rgba(255, 255, 255, 0.05)', color: 'white',
+                      border: '1px solid var(--border-light)', borderRadius: '14px', padding: '12px 0',
+                      fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                       transition: 'var(--transition)'
                     }}
                   >
-                    <ShoppingBag size={16} />
+                    <ShoppingBag size={15} />
                     <span>Add to Enquiry</span>
                   </button>
 
@@ -1496,21 +1844,103 @@ export default function App() {
                     href={generateSingleWhatsAppMessage(selectedCar, detailMode, detailDays, detailQuantity)}
                     target="_blank"
                     rel="noreferrer"
-                    className="animate-pulse-green"
+                    className="animate-glow-pulse"
                     style={{
                       flex: 1.2, background: 'var(--success)', color: 'white',
                       border: 'none', borderRadius: '14px', padding: '12px 0',
-                      fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer',
+                      fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      textDecoration: 'none', textAlign: 'center'
+                      textDecoration: 'none', textAlign: 'center',
+                      boxShadow: '0 4px 15px rgba(18, 161, 80, 0.3)'
                     }}
                   >
-                    <MessageSquare size={16} fill="white" />
+                    <MessageSquare size={15} fill="white" />
                     <span>Book on WhatsApp</span>
                   </a>
                 </div>
 
               </div>
+            )}
+
+            {/* CHAT/SUPPORT BOTTOM DRAWER DRAWER (Phone number completely hidden in UI) */}
+            {isChatOpen && (
+              <>
+                {/* Overlay backdrop */}
+                <div className="modal-overlay" onClick={() => setIsChatOpen(false)} />
+                
+                {/* Drawer Panel */}
+                <div className="chat-drawer animate-drawer-up">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: '800', color: 'white' }}>KieZcars Support Center</h4>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Kampala Showroom Representatives • Active 24/7</span>
+                    </div>
+                    <button 
+                      onClick={() => setIsChatOpen(false)}
+                      style={{
+                        background: 'rgba(255,255,255,0.05)', 
+                        border: 'none', 
+                        borderRadius: '50%', 
+                        width: '28px', 
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#94a3b8',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <a 
+                      href="https://wa.me/256702370441"
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '14px',
+                        padding: '14px', borderRadius: '16px', background: 'rgba(18, 161, 80, 0.08)',
+                        textDecoration: 'none', color: 'white', fontSize: '0.85rem',
+                        border: '1px solid rgba(18, 161, 80, 0.25)', 
+                        transition: 'var(--transition)'
+                      }}
+                    >
+                      <div style={{ color: 'var(--success)', background: 'rgba(18, 161, 80, 0.15)', padding: '10px', borderRadius: '12px' }}>
+                        <MessageSquare size={20} fill="var(--success)" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '800' }}>WhatsApp Chat Support</div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Tap to instantly message representatives</span>
+                      </div>
+                    </a>
+
+                    <a 
+                      href="tel:+256702370441"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '14px',
+                        padding: '14px', borderRadius: '16px', background: 'rgba(255, 87, 51, 0.08)',
+                        textDecoration: 'none', color: 'white', fontSize: '0.85rem',
+                        border: '1px solid rgba(255, 87, 51, 0.25)', 
+                        transition: 'var(--transition)'
+                      }}
+                    >
+                      <div style={{ color: 'var(--primary)', background: 'rgba(255, 87, 51, 0.15)', padding: '10px', borderRadius: '12px' }}>
+                        <Phone size={20} fill="var(--primary)" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '800' }}>Direct Call Hotline</div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Call standard rates via local telecom carrier</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '16px', lineHeight: '1.4' }}>
+                    Our sales agents are standby to assist you with vehicle hire verification, wedding convoy planning, airport drops, and import specifications.
+                  </p>
+                </div>
+              </>
             )}
 
           </div>
