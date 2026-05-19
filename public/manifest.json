@@ -1,0 +1,22 @@
+{
+  "short_name": "KieZcars",
+  "name": "KieZcars Car Selling & Car Hire",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=192&h=192",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=512&h=512",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#f8fafc",
+  "theme_color": "#ff5733",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ff5733">
+  
+  <title>KieZcars | Interactive Browser Preview</title>
+  <meta name="description" content="A self-contained preview of the KieZcars car selling and hire web application." />
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel for JSX compilation in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --primary: #ff5733;
+      --primary-hover: #e04422;
+      --primary-light: #fff0eb;
+      --success: #12a150;
+      --success-light: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-light: #fefbeb;
+      --danger: #ef4444;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --border-light: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.05);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --font: 'Outfit', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font);
+      background: #0f172a;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .app-emulator-container {
+      width: 100%;
+      max-width: 450px;
+      height: 100vh;
+      background: var(--bg-main);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .desktop-bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 10% 20%, rgba(255, 87, 51, 0.08) 0%, rgba(15, 23, 42, 0.95) 90%);
+      z-index: -1;
+      display: flex;
+      justify-content: space-between;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    .desktop-info-card {
+      color: white;
+      max-width: 320px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .desktop-info-card h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #ff5733, #ff8b70);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .desktop-info-card p {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .brand-feature-badge {
+      background: rgba(255, 87, 51, 0.15);
+      border: 1px solid rgba(255, 87, 51, 0.25);
+      color: #ff8b70;
+      padding: 8px 16px;
+      border-radius: 99px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+
+    @media (min-width: 1025px) {
+      .desktop-info-card {
+        display: flex;
+      }
+      .app-emulator-container {
+        height: 92vh;
+        border-radius: 32px;
+        border: 8px solid #334155;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideLeft {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse-soft {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(18, 161, 80, 0.4); }
+      50% { transform: scale(1.03); box-shadow: 0 6px 20px rgba(18, 161, 80, 0.6); }
+    }
+
+    @keyframes pulse-primary {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(255, 87, 51, 0.4); }
+      50% { transform: scale(1.03); box-shadow: 0 6px 20px rgba(255, 87, 51, 0.6); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .animate-pulse-green {
+      animation: pulse-soft 2s infinite;
+    }
+
+    .animate-pulse-coral {
+      animation: pulse-primary 2s infinite;
+    }
+
+    input {
+      outline: none;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 87, 51, 0.15);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .card-badge.sale {
+      background: #ff5733;
+    }
+
+    .card-badge.hire {
+      background: #3b82f6;
+    }
+
+    .tab-active-indicator {
+      position: absolute;
+      bottom: 0;
+      left: 15%;
+      right: 15%;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 9px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <!-- React JSX Application Script -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const CAR_DATA = [
+      {
+        id: "toyota-land-cruiser-v8",
+        name: "Toyota Land Cruiser V8",
+        category: "SUV",
+        tags: ["BEST SELLER", "4X4 TANK"],
+        rating: 4.9,
+        reviewsCount: 142,
+        images: [
+          "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 85000,
+        priceHire: 180,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 7,
+          luggage: 4,
+          transmission: "Automatic",
+          fuel: "Diesel",
+          engine: "4.5L Twin-Turbo V8",
+          horsepower: "268 HP"
+        },
+        description: "The Toyota Land Cruiser V8 represents the peak of off-road capability combined with premium interior comfort. Ready for city cruising or rugged terrain, it is powered by a robust twin-turbo diesel V8 engine and features a luxurious leather-clad cabin with multi-zone climate control.",
+        policy: "Valid national ID/Passport, driver's license (min. 3 years experience), and a refundable security deposit of $300 are required upon pickup."
+      },
+      {
+        id: "tesla-model-y",
+        name: "Tesla Model Y Dual Motor",
+        category: "Luxury",
+        tags: ["POPULAR", "100% ELECTRIC"],
+        rating: 4.8,
+        reviewsCount: 96,
+        images: [
+          "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 49900,
+        priceHire: 140,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 5,
+          luggage: 3,
+          transmission: "Automatic",
+          fuel: "Electric",
+          engine: "Dual Motor AWD",
+          horsepower: "384 HP"
+        },
+        description: "Experience the future of driving with the Tesla Model Y. Offering lightning-fast acceleration, zero emissions, and autopilot capabilities, this high-tech electric compact SUV provides unmatched safety ratings, massive cargo room, and a stunning 15-inch touchscreen interface.",
+        policy: "Full battery charge (450km range) provided at pickup. Hires must return the vehicle with at least 15% charge."
+      },
+      {
+        id: "mercedes-benz-s-class",
+        name: "Mercedes-Benz S-Class S500",
+        category: "Luxury",
+        tags: ["HOT", "VIP FIRST CLASS"],
+        rating: 5.0,
+        reviewsCount: 64,
+        images: [
+          "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 114500,
+        priceHire: 260,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 5,
+          luggage: 3,
+          transmission: "Automatic",
+          fuel: "Petrol",
+          engine: "3.0L Inline-6 Turbo with EQ Boost",
+          horsepower: "429 HP"
+        },
+        description: "The absolute benchmark of luxury sedans. The Mercedes-Benz S-Class defines premium status, featuring cutting-edge OLED displays, active air suspension for a magic carpet ride, and executive active-massaging rear seats.",
+        policy: "For hire, this vehicle can be booked with an optional professional chauffeur service ($50 extra per day). Minimum age for self-drive hire is 25 years."
+      },
+      {
+        id: "ford-mustang-gt",
+        name: "Ford Mustang GT Fastback V8",
+        category: "Luxury",
+        tags: ["NEW ARRIVAL", "V8 MUSCLE"],
+        rating: 4.7,
+        reviewsCount: 88,
+        images: [
+          "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 46000,
+        priceHire: 190,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 4,
+          luggage: 2,
+          transmission: "Manual",
+          fuel: "Petrol",
+          engine: "5.0L Coyote V8",
+          horsepower: "460 HP"
+        },
+        description: "Unleash pure American muscle. The Ford Mustang GT delivers raw power and an iconic roaring exhaust note from its high-revving 5.0L Coyote V8 engine. Featuring a classic sports interior, active performance exhaust, and track mode controls.",
+        policy: "Self-drive hirers must demonstrate competency with manual transmissions. Strictly prohibited for racing, drifting, or track use."
+      },
+      {
+        id: "honda-civic-sport",
+        name: "Honda Civic Sport Hatchback",
+        category: "Hatchback",
+        tags: ["BEST VALUE", "FUEL SAVER"],
+        rating: 4.8,
+        reviewsCount: 189,
+        images: [
+          "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 26500,
+        priceHire: 65,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 5,
+          luggage: 2,
+          transmission: "Automatic",
+          fuel: "Petrol",
+          engine: "2.0L DOHC 4-Cylinder",
+          horsepower: "158 HP"
+        },
+        description: "Sleek, incredibly reliable, and remarkably efficient. The Honda Civic Sport Hatchback offers sporty styling, crisp handling, and a spacious utility cabin.",
+        policy: "An ideal and budget-friendly choice for long-term hires. Monthly bookings attract a generous 20% discount."
+      },
+      {
+        id: "range-rover-sport",
+        name: "Range Rover Sport HSE",
+        category: "SUV",
+        tags: ["PREMIUM SUV", "DYNMC LUXURY"],
+        rating: 4.9,
+        reviewsCount: 57,
+        images: [
+          "https://images.unsplash.com/photo-1606016159991-dfe4f974be5c?auto=format&fit=crop&q=80&w=800"
+        ],
+        priceSale: 92000,
+        priceHire: 220,
+        isSale: true,
+        isHire: true,
+        specs: {
+          passengers: 5,
+          luggage: 4,
+          transmission: "Automatic",
+          fuel: "Hybrid",
+          engine: "3.0L Turbocharged I6 Hybrid",
+          horsepower: "395 HP"
+        },
+        description: "The Range Rover Sport combines dynamic road presence with unbeatable British luxury and supreme off-road pedigree.",
+        policy: "Requires a minimum 2-day hire booking. Full comprehensive insurance cover included."
+      }
+    ];
+
+    const CATEGORIES = [
+      { id: "all", name: "All Cars" },
+      { id: "SUV", name: "SUVs" },
+      { id: "Sedan", name: "Sedans" },
+      { id: "Hatchback", name: "Hatchbacks" },
+      { id: "Luxury", name: "Luxury" },
+      { id: "Car Hire", name: "Car Hire" }
+    ];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('home');
+      const [selectedCar, setSelectedCar] = useState(null);
+      const [cart, setCart] = useState([]);
+      const [favorites, setFavorites] = useState([]);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('all');
+      const [activeDetailTab, setActiveDetailTab] = useState('desc');
+      const [detailMode, setDetailMode] = useState('hire');
+      const [detailDays, setDetailDays] = useState(3);
+      const [detailQuantity, setDetailQuantity] = useState(1);
+      const [userEmail, setUserEmail] = useState('');
+      const [loginInput, setLoginInput] = useState('');
+      const [successToast, setSuccessToast] = useState('');
+
+      useEffect(() => {
+        // Initialize lucide icons
+        setTimeout(() => {
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+        }, 100);
+      }, [activeTab, selectedCar]);
+
+      const triggerToast = (msg) => {
+        setSuccessToast(msg);
+        setTimeout(() => setSuccessToast(''), 3000);
+      };
+
+      const toggleFavorite = (carId, e) => {
+        if (e) e.stopPropagation();
+        if (favorites.includes(carId)) {
+          setFavorites(favorites.filter(id => id !== carId));
+          triggerToast("Removed from Wishlist");
+        } else {
+          setFavorites([...favorites, carId]);
+          triggerToast("Added to Wishlist!");
+        }
+      };
+
+      const addToCart = (car, mode, qtyOrDays) => {
+        const id = `${car.id}-${mode}`;
+        const existingIndex = cart.findIndex(item => item.id === id);
+        if (existingIndex > -1) {
+          const newCart = [...cart];
+          if (mode === 'hire') {
+            newCart[existingIndex].days = qtyOrDays;
+          } else {
+            newCart[existingIndex].quantity += qtyOrDays;
+          }
+          setCart(newCart);
+        } else {
+          setCart([...cart, {
+            id,
+            car,
+            mode,
+            quantity: mode === 'buy' ? qtyOrDays : 1,
+            days: mode === 'hire' ? qtyOrDays : 1
+          }]);
+        }
+        triggerToast(`Added ${car.name} to enquiry!`);
+      };
+
+      const removeFromCart = (itemId) => {
+        setCart(cart.filter(item => item.id !== itemId));
+        triggerToast("Removed from cart");
+      };
+
+      const updateCartQuantity = (itemId, change) => {
+        setCart(cart.map(item => {
+          if (item.id === itemId) {
+            if (item.mode === 'hire') {
+              return { ...item, days: Math.max(1, item.days + change) };
+            } else {
+              return { ...item, quantity: Math.max(1, item.quantity + change) };
+            }
+          }
+          return item;
+        }));
+      };
+
+      const getFilteredCars = () => {
+        return CAR_DATA.filter(car => {
+          const matchesSearch = car.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                car.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                car.specs.fuel.toLowerCase().includes(searchQuery.toLowerCase());
+          
+          if (selectedCategory === 'all') return matchesSearch;
+          if (selectedCategory === 'Car Hire') return matchesSearch && car.isHire;
+          return matchesSearch && car.category === selectedCategory;
+        });
+      };
+
+      const getWhatsAppLink = (text) => {
+        return `https://wa.me/256702370441?text=${encodeURIComponent(text)}`;
+      };
+
+      const generateSingleWhatsAppMessage = (car, mode, days, qty) => {
+        let text = `Hello KieZcars! 👋\n\nI'm highly interested in the following vehicle:\n`;
+        text += `🚗 *${car.name}*\n`;
+        text += `• Category: ${car.category}\n`;
+        text += `• Mode: ${mode === 'hire' ? 'Rental / Car Hire' : 'Outright Purchase'}\n`;
+        
+        if (mode === 'hire') {
+          text += `• Duration: ${days} days\n`;
+          text += `• Daily rate: $${car.priceHire}/day\n`;
+          text += `• Subtotal: $${car.priceHire * days}\n`;
+          text += `• Deposit: $200\n`;
+          text += `*Grand Total: $${(car.priceHire * days) + 200}*`;
+        } else {
+          text += `• Quantity: ${qty} unit(s)\n`;
+          text += `• Unit Price: $${car.priceSale.toLocaleString()}\n`;
+          text += `*Grand Total: $${(car.priceSale * qty).toLocaleString()}*`;
+        }
+        text += `\n\nPlease confirm availability. Thank you!`;
+        return getWhatsAppLink(text);
+      };
+
+      const generateCartWhatsAppMessage = () => {
+        let text = `Hello KieZcars! 👋\n\nI'd like to submit an enquiry:\n\n`;
+        let grandTotal = 0;
+        
+        cart.forEach((item, index) => {
+          const car = item.car;
+          text += `${index + 1}. *${car.name}* (${item.mode === 'hire' ? 'Hire' : 'Buy'})\n`;
+          if (item.mode === 'hire') {
+            const sub = car.priceHire * item.days;
+            text += `   • $${car.priceHire}/d × ${item.days} days = $${sub}\n`;
+            grandTotal += sub;
+          } else {
+            const sub = car.priceSale * item.quantity;
+            text += `   • $${car.priceSale.toLocaleString()} × ${item.quantity} = $${sub.toLocaleString()}\n`;
+            grandTotal += sub;
+          }
+        });
+        
+        text += `\n*Grand Total Estimate: $${(grandTotal + 200).toLocaleString()}* (incl. $200 deposit)\n\nPlease advise on next steps!`;
+        return getWhatsAppLink(text);
+      };
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (loginInput.trim()) {
+          setUserEmail(loginInput);
+          triggerToast("Logged In!");
+          setLoginInput('');
+        }
+      };
+
+      return (
+        <div className="desktop-bg-canvas">
+          <div className="desktop-info-card">
+            <div className="brand-feature-badge">
+              <i data-lucide="car" style={{ width: '16px' }}></i> Premium Car Showroom
+            </div>
+            <h1>KieZcars</h1>
+            <p>
+              Experience premium car sales and elite car hire rentals. Book seamlessly via WhatsApp.
+              Optimized as a PWA, responsive, elegant, and offline capable.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flex: 1 }}>
+                <h4 style={{ color: '#ff5733', fontSize: '1.2rem', marginBottom: '4px' }}>24/7</h4>
+                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>WhatsApp Support</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', flex: 1 }}>
+                <h4 style={{ color: '#ff5733', fontSize: '1.2rem', marginBottom: '4px' }}>100%</h4>
+                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Secure Checkout</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="app-emulator-container">
+            {/* Header */}
+            <header style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              position: 'sticky', top: 0, zIndex: 50,
+              padding: '12px 16px',
+              borderBottom: '1px solid var(--border-light)',
+              display: 'flex', flexDirection: 'column', gap: '10px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div onClick={() => setActiveTab('home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <div style={{ background: 'var(--primary)', color: 'white', padding: '6px', borderRadius: '10px', display: 'flex' }}>
+                    <i data-lucide="car" style={{ width: '18px', height: '18px' }}></i>
+                  </div>
+                  <span style={{ fontWeight: '800', fontSize: '1.2rem' }}>KieZ<span style={{ color: 'var(--primary)' }}>cars</span></span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button onClick={() => setActiveTab('favorites')} style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                    <i data-lucide="heart" style={{ width: '22px', fill: favorites.length > 0 ? "var(--danger)" : "none", color: favorites.length > 0 ? "var(--danger)" : "#64748b" }}></i>
+                    {favorites.length > 0 && <span style={{ position: 'absolute', top: -4, right: -4, background: 'var(--danger)', color: 'white', fontSize: '0.62rem', fontWeight: 'bold', padding: '1px 4px', borderRadius: '50%' }}>{favorites.length}</span>}
+                  </button>
+                  <button onClick={() => setActiveTab('cart')} style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                    <i data-lucide="shopping-bag" style={{ width: '22px', color: cart.length > 0 ? "var(--primary)" : "#64748b" }}></i>
+                    {cart.length > 0 && <span style={{ position: 'absolute', top: -4, right: -4, background: 'var(--primary)', color: 'white', fontSize: '0.62rem', fontWeight: 'bold', padding: '1px 4px', borderRadius: '50%' }}>{cart.length}</span>}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text" 
+                  placeholder="Search sports cars, luxury SUVs, hire terms..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ width: '100%', paddingLeft: '36px', height: '38px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}
+                />
+                <i data-lucide="search" style={{ position: 'absolute', left: '12px', top: '11px', width: '16px', color: 'var(--text-muted)' }}></i>
+              </div>
+            </header>
+
+            {/* Toast */}
+            {successToast && (
+              <div style={{
+                position: 'absolute', top: '75px', left: '50%', transform: 'translateX(-50%)',
+                background: '#0f172a', color: 'white', padding: '8px 16px', borderRadius: '99px',
+                fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', zIndex: 99
+              }}>
+                <i data-lucide="check" style={{ width: '14px', color: '#10b981' }}></i>
+                <span>{successToast}</span>
+              </div>
+            )}
+
+            {/* Main Area */}
+            <main style={{ flex: 1, overflowY: 'auto', background: '#f8fafc', paddingBottom: '30px' }}>
+              
+              {activeTab === 'home' && (
+                <div className="animate-fade-in">
+                  {/* Slider Banner */}
+                  <div style={{ position: 'relative', width: '100%', height: '150px', background: '#1e293b', overflow: 'hidden' }}>
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      backgroundImage: `url('https://images.unsplash.com/photo-1606016159991-dfe4f974be5c?auto=format&fit=crop&q=80&w=800')`,
+                      backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6)'
+                    }}></div>
+                    <div style={{ position: 'relative', height: '100%', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', color: 'white' }}>
+                      <span style={{ background: 'rgba(255, 87, 51, 0.3)', color: '#ff8b70', fontSize: '0.62rem', fontWeight: '800', width: 'fit-content', padding: '2px 6px', borderRadius: '4px', marginBottom: '6px' }}>HOT DEAL</span>
+                      <h2 style={{ fontSize: '1.1rem', marginBottom: '2px' }}>Premium Fleet Hire Vehicles</h2>
+                      <p style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>Drive Tesla, Mercedes & Porsche from $65/day.</p>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Category chip filters */}
+                  <div style={{ padding: '20px 16px 10px 16px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '12px' }}>Browse by Vehicle Type</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
+                      {CATEGORIES.slice(1).map(cat => (
+                        <div key={cat.id} onClick={() => { setSelectedCategory(cat.id); setActiveTab('categories'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                          <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #f1f5f9', boxShadow: 'var(--shadow-sm)', color: 'var(--primary)' }}>
+                            <i data-lucide="compass" style={{ width: '20px' }}></i>
+                          </div>
+                          <span style={{ fontSize: '0.65rem', fontWeight: '600', color: 'var(--text-muted)' }}>{cat.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hot deals */}
+                  <div style={{ padding: '16px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '12px' }}>🔥 Hot Deals of the Week</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                      {CAR_DATA.slice(0,4).map(car => (
+                        <div key={car.id} onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }} style={{ background: 'white', borderRadius: '18px', border: '1px solid #f1f5f9', overflow: 'hidden', position: 'relative', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+                          <button onClick={(e) => toggleFavorite(car.id, e)} style={{ position: 'absolute', top: '8px', right: '8px', width: '26px', height: '26px', borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                            <i data-lucide="heart" style={{ width: '13px', fill: favorites.includes(car.id) ? "var(--danger)" : "none", color: favorites.includes(car.id) ? "var(--danger)" : "#64748b" }}></i>
+                          </button>
+                          <span className={`card-badge ${car.isHire ? 'hire' : 'sale'}`} style={{ top: '8px', left: '8px' }}>{car.tags[0]}</span>
+                          <div style={{ width: '100%', height: '95px' }}>
+                            <img src={car.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <h4 style={{ fontSize: '0.78rem', color: 'var(--text-main)', marginBottom: '4px' }}>{car.name}</h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '6px', marginTop: '6px' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--primary)' }}>${car.isHire ? `${car.priceHire}/d` : car.priceSale.toLocaleString()}</span>
+                              <div style={{ background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '6px', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>+</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'categories' && (
+                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', whiteSpace: 'nowrap' }}>
+                    {CATEGORIES.map(cat => (
+                      <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} style={{ background: selectedCategory === cat.id ? 'var(--primary)' : 'white', color: selectedCategory === cat.id ? 'white' : 'var(--text-main)', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer' }}>
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '14px' }}>
+                    {getFilteredCars().map(car => (
+                      <div key={car.id} onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }} style={{ background: 'white', borderRadius: '18px', border: '1px solid #f1f5f9', overflow: 'hidden', position: 'relative', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+                        <button onClick={(e) => toggleFavorite(car.id, e)} style={{ position: 'absolute', top: '8px', right: '8px', width: '26px', height: '26px', borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                          <i data-lucide="heart" style={{ width: '13px', fill: favorites.includes(car.id) ? "var(--danger)" : "none", color: favorites.includes(car.id) ? "var(--danger)" : "#64748b" }}></i>
+                        </button>
+                        <div style={{ width: '100%', height: '95px' }}>
+                          <img src={car.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <h4 style={{ fontSize: '0.78rem', color: 'var(--text-main)', marginBottom: '4px' }}>{car.name}</h4>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '6px', marginTop: '6px' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--primary)' }}>${car.isHire ? `${car.priceHire}/d` : car.priceSale.toLocaleString()}</span>
+                            <div style={{ background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '6px', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>+</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'favorites' && (
+                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                  <h3 style={{ fontSize: '1rem', marginBottom: '12px' }}>Your Saved Showroom</h3>
+                  {favorites.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                      {CAR_DATA.filter(car => favorites.includes(car.id)).map(car => (
+                        <div key={car.id} onClick={() => { setSelectedCar(car); setDetailMode(car.isHire ? 'hire' : 'buy'); }} style={{ background: 'white', borderRadius: '18px', border: '1px solid #f1f5f9', overflow: 'hidden', position: 'relative', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+                          <button onClick={(e) => toggleFavorite(car.id, e)} style={{ position: 'absolute', top: '8px', right: '8px', width: '26px', height: '26px', borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                            <i data-lucide="heart" style={{ width: '13px', fill: 'var(--danger)', color: 'var(--danger)' }}></i>
+                          </button>
+                          <div style={{ width: '100%', height: '95px' }}>
+                            <img src={car.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', justify: 'space-between' }}>
+                            <h4 style={{ fontSize: '0.78rem', color: 'var(--text-main)' }}>{car.name}</h4>
+                            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '6px', marginTop: '6px' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--primary)' }}>${car.isHire ? `${car.priceHire}/d` : car.priceSale.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px 10px', color: 'var(--text-muted)' }}>
+                      <p>No favorites saved yet!</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'cart' && (
+                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                  <h3 style={{ fontSize: '1rem', marginBottom: '12px' }}>Booking Enquiry Cart</h3>
+                  {cart.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {cart.map(item => (
+                        <div key={item.id} style={{ background: 'white', borderRadius: '18px', padding: '10px', display: 'flex', gap: '12px', border: '1px solid #f1f5f9' }}>
+                          <div style={{ width: '70px', height: '60px', borderRadius: '10px', overflow: 'hidden' }}>
+                            <img src={item.car.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <h4 style={{ fontSize: '0.8rem' }}>{item.car.name}</h4>
+                              <button onClick={() => removeFromCart(item.id)} style={{ border: 'none', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}><i data-lucide="trash-2" style={{ width: '14px' }}></i></button>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.8rem', fontWeight: '800' }}>${item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity)}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '2px 6px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <button onClick={() => updateCartQuantity(item.id, -1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>-</button>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{item.mode === 'hire' ? item.days : item.quantity}</span>
+                                <button onClick={() => updateCartQuantity(item.id, 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>+</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div style={{ background: 'white', borderRadius: '18px', padding: '12px', marginTop: '10px', border: '1px solid #f1f5f9', fontSize: '0.8rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Refundable Security Deposit</span><span>$200</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '800', color: 'var(--primary)', borderTop: '1px dashed #e2e8f0', paddingTop: '8px' }}>
+                          <span>Grand Total Estimate</span>
+                          <span>${(cart.reduce((sum, item) => sum + (item.mode === 'hire' ? (item.car.priceHire * item.days) : (item.car.priceSale * item.quantity)), 0) + 200).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <a href={generateCartWhatsAppMessage()} target="_blank" className="animate-pulse-green" style={{ background: 'var(--success)', color: 'white', padding: '12px', borderRadius: '14px', textAlign: 'center', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
+                        <i data-lucide="message-square" style={{ width: '16px', fill: 'white' }}></i>
+                        <span>Order via WhatsApp (+256702370441)</span>
+                      </a>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px 10px', color: 'var(--text-muted)' }}>
+                      <p>Your cart is empty.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'account' && (
+                <div className="animate-fade-in" style={{ padding: '16px' }}>
+                  <div style={{ background: 'white', borderRadius: '18px', padding: '16px', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+                    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold', margin: '0 auto 10px auto' }}>U</div>
+                    <h4 style={{ fontSize: '0.9rem' }}>Guest User</h4>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '10px' }}>Sign in to sync saved items.</p>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input type="email" placeholder="Enter Email" value={loginInput} onChange={e => setLoginInput(e.target.value)} style={{ flex: 1, height: '32px', fontSize: '0.75rem' }} />
+                      <button onClick={() => { if(loginInput) { setUserEmail(loginInput); triggerToast("Signed In!"); setLoginInput(''); } }} style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '0 12px', fontSize: '0.75rem', fontWeight: 'bold' }}>Sign In</button>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'white', borderRadius: '18px', padding: '16px', border: '1px solid #f1f5f9', marginTop: '12px' }}>
+                    <h4 style={{ fontSize: '0.85rem', marginBottom: '8px' }}>WhatsApp Instant Support</h4>
+                    <a href="https://wa.me/256702370441" style={{ display: 'flex', gap: '8px', alignItems: 'center', background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.8rem' }}>
+                      <i data-lucide="message-square" style={{ color: 'var(--success)' }}></i>
+                      <span>Chat Live with Representative (+256702370441)</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+
+            </main>
+
+            {/* Sticky Navigation */}
+            <footer style={{ background: '#ffffff', borderTop: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', height: '58px', zIndex: 40 }}>
+              <button onClick={() => { setActiveTab('home'); setSelectedCategory('all'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', background: 'transparent', border: 'none', cursor: 'pointer', color: activeTab === 'home' ? 'var(--primary)' : 'var(--text-muted)' }}>
+                <i data-lucide="compass" style={{ width: '18px' }}></i><span style={{ fontSize: '0.6rem' }}>Home</span>
+              </button>
+              <button onClick={() => setActiveTab('categories')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', background: 'transparent', border: 'none', cursor: 'pointer', color: activeTab === 'categories' ? 'var(--primary)' : 'var(--text-muted)' }}>
+                <i data-lucide="layers" style={{ width: '18px' }}></i><span style={{ fontSize: '0.6rem' }}>Categories</span>
+              </button>
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <a href="https://wa.me/256702370441" className="animate-pulse-coral" style={{ position: 'absolute', top: '-14px', background: 'var(--primary)', color: 'white', width: '46px', height: '46px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid white', boxShadow: '0 4px 10px rgba(255, 87, 51, 0.3)' }}>
+                  <i data-lucide="message-square" style={{ width: '18px', fill: 'white' }}></i>
+                </a>
+              </div>
+              <button onClick={() => setActiveTab('cart')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', background: 'transparent', border: 'none', cursor: 'pointer', color: activeTab === 'cart' ? 'var(--primary)' : 'var(--text-muted)' }}>
+                <i data-lucide="shopping-bag" style={{ width: '18px' }}></i><span style={{ fontSize: '0.6rem' }}>Cart</span>
+              </button>
+              <button onClick={() => setActiveTab('account')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', background: 'transparent', border: 'none', cursor: 'pointer', color: activeTab === 'account' ? 'var(--primary)' : 'var(--text-muted)' }}>
+                <i data-lucide="user" style={{ width: '18px' }}></i><span style={{ fontSize: '0.6rem' }}>Account</span>
+              </button>
+            </footer>
+
+            {/* DETAILS MODAL */}
+            {selectedCar && (
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#ffffff', zIndex: 100, display: 'flex', flexDirection: 'column', animation: 'slideLeft 0.3s ease-out forwards' }}>
+                <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button onClick={() => setSelectedCar(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-main)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    Back
+                  </button>
+                  <button onClick={(e) => toggleFavorite(selectedCar.id, e)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                    <i data-lucide="heart" style={{ width: '20px', fill: favorites.includes(selectedCar.id) ? "var(--danger)" : "none", color: favorites.includes(selectedCar.id) ? "var(--danger)" : "#64748b" }}></i>
+                  </button>
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '70px' }}>
+                  <div style={{ width: '100%', height: '180px' }}>
+                    <img src={selectedCar.images[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ padding: '16px' }}>
+                    <h2 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>{selectedCar.name}</h2>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', background: '#f8fafc', padding: '10px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '14px', fontSize: '0.7rem', textAlign: 'center' }}>
+                      <div><b>Fuel:</b><br/>{selectedCar.specs.fuel}</div>
+                      <div><b>Trans:</b><br/>{selectedCar.specs.transmission}</div>
+                      <div><b>Power:</b><br/>{selectedCar.specs.horsepower}</div>
+                    </div>
+
+                    <div style={{ background: 'var(--primary-light)', padding: '12px', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 'bold' }}>Rate/Price</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: '800' }}>${detailMode === 'hire' ? selectedCar.priceHire : selectedCar.priceSale.toLocaleString()}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '4px 8px', borderRadius: '8px' }}>
+                        <button onClick={() => { if(detailMode==='hire') setDetailDays(p=>Math.max(1, p-1)); else setDetailQuantity(p=>Math.max(1,p-1)) }} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>-</button>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{detailMode==='hire' ? `${detailDays}d` : `${detailQuantity}x`}</span>
+                        <button onClick={() => { if(detailMode==='hire') setDetailDays(p=>p+1); else setDetailQuantity(p=>p+1) }} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>+</button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '15px', borderBottom: '1px solid #e2e8f0', marginBottom: '12px', fontSize: '0.8rem' }}>
+                      <button onClick={() => setActiveDetailTab('desc')} style={{ background: 'transparent', border: 'none', paddingBottom: '6px', fontWeight: 'bold', color: activeDetailTab==='desc'?'var(--primary)':'#64748b' }}>Description</button>
+                      <button onClick={() => setActiveDetailTab('policy')} style={{ background: 'transparent', border: 'none', paddingBottom: '6px', fontWeight: 'bold', color: activeDetailTab==='policy'?'var(--primary)':'#64748b' }}>Policy</button>
+                    </div>
+
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                      {activeDetailTab === 'desc' ? selectedCar.description : selectedCar.policy}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white', padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
+                  <button onClick={() => { addToCart(selectedCar, detailMode, detailMode==='hire'?detailDays:detailQuantity); setSelectedCar(null); }} style={{ flex: 1, background: '#0f172a', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}>Enquire Cart</button>
+                  <a href={generateSingleWhatsAppMessage(selectedCar, detailMode, detailDays, detailQuantity)} target="_blank" className="animate-pulse-green" style={{ flex: 1.2, background: 'var(--success)', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontWeight: 'bold', fontSize: '0.8rem', textDecoration: 'none', textAlign: 'center' }}>WhatsApp Book</a>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+
+</body>
+</html>
